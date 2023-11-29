@@ -59,5 +59,12 @@ class MainViewModel (private val dao: TripsDao): ViewModel(){
         }
     }
 
+    fun dismissSingleTripModal(){
+        viewModelScope.launch {
+            _mainViewState.update { it.copy(openTripDialog = false) }
+            getTrips()
+        }
+    }
+
 }
 

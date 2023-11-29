@@ -1,6 +1,7 @@
 package com.cc221002.mcfinalprojectmanuelprammer.ui.view
 
 import android.os.Build
+import android.window.SplashScreen
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -233,11 +234,6 @@ fun showTrips(mainViewModel: MainViewModel,navController: NavHostController) {
                     )
                 }
             }
-
-
-
-
-
         }
         }
     }
@@ -250,16 +246,15 @@ fun showTrips(mainViewModel: MainViewModel,navController: NavHostController) {
             .background(color = Color.Green)
             .align(Alignment.BottomEnd)
             .clickable { navController.navigate(Screen.Second.route) }
-    ){
-    }
+    ){}
     }
     if (state.value.openTripDialog) {
-        showSingleTripModal(mainViewModel)
+        showSingleTripModal(mainViewModel, navController)
     }
 }
 
 @Composable
-fun showSingleTripModal(mainViewModel: MainViewModel){
+fun showSingleTripModal(mainViewModel: MainViewModel, navController: NavHostController) {
     val tripsState = mainViewModel.trips.collectAsState()
 
     LazyColumn(
@@ -268,8 +263,8 @@ fun showSingleTripModal(mainViewModel: MainViewModel){
         modifier = Modifier
             .fillMaxSize()
             .background(Color.DarkGray),
-    ){
-        items(tripsState.value) {trip ->
+    ) {
+        items(tripsState.value) { trip ->
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -291,9 +286,20 @@ fun showSingleTripModal(mainViewModel: MainViewModel){
             }
         }
     }
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
+        Box(modifier = Modifier
+            .padding(50.dp)
+            .width(50.dp)
+            .height(50.dp)
+            .background(color = Color.Green)
+            .align(Alignment.BottomCenter)
+            .clickable { mainViewModel.dismissSingleTripModal() }
+        ) {}
+    }
 }
-
-
     @Composable
     fun SplashScreen() {
         Box(
