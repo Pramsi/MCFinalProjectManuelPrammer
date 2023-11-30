@@ -178,7 +178,10 @@ fun showTrips(mainViewModel: MainViewModel,navController: NavHostController) {
                     .fillMaxWidth()
                     .background(backgroundWhite)
                     .height(200.dp)
-                    .clickable { mainViewModel.showTripWithID(trip.id) },
+                    .clickable {
+                        mainViewModel.showTripWithID(trip.id)
+                        Log.d("Show Trips with ID", " Clicked")
+                    },
                 horizontalArrangement = Arrangement.Center
             ){
                 Row(
