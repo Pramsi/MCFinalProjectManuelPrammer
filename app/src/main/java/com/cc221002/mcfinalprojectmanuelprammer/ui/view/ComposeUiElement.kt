@@ -1,6 +1,11 @@
 package com.cc221002.mcfinalprojectmanuelprammer.ui.view
 
+import android.app.DatePickerDialog
+import android.content.Context
 import android.os.Build
+import android.util.Log
+import android.widget.DatePicker
+import android.widget.Space
 import android.window.SplashScreen
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
@@ -16,6 +21,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -26,6 +32,7 @@ import androidx.compose.material.BottomNavigation
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -48,9 +55,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -71,6 +82,8 @@ import com.cc221002.mcfinalprojectmanuelprammer.ui.theme.backgroundWhite
 import com.cc221002.mcfinalprojectmanuelprammer.ui.view_model.MainViewModel
 import kotlinx.coroutines.delay
 import java.time.LocalDate
+import java.util.Calendar
+import java.util.Date
 
 sealed class Screen(val route: String) {
     object First: Screen("first")
@@ -78,7 +91,6 @@ sealed class Screen(val route: String) {
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainView(mainViewModel: MainViewModel) {
     val navController = rememberNavController()
@@ -317,58 +329,60 @@ fun showSingleTripModal(mainViewModel: MainViewModel, navController: NavHostCont
         }
     }
 
+
+
 @RequiresApi(Build.VERSION_CODES.O)
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DatePickerField(
     selectedDate: LocalDate?,
     onDateSelected: (LocalDate) -> Unit
 ) {
-    var expanded by remember { mutableStateOf(false) }
-    var tempDate by remember { mutableStateOf(selectedDate ?: LocalDate.now().toEpochDay()) }
+    val context = LocalContext.current
+    val calendar = Calendar.getInstance()
+
+
+    val datePicker = remember { // Use remember to ensure the dialog state is retained
+        DatePickerDialog(
+            context,
+            { _, selectedYear, selectedMonth, selectedDayOfMonth ->
+                onDateSelected(LocalDate.of(selectedYear, selectedMonth + 1, selectedDayOfMonth))
+            },
+            calendar[Calendar.YEAR],
+            calendar[Calendar.MONTH],
+            calendar[Calendar.DAY_OF_MONTH]
+        )
+    }
 
 Row(
     modifier = Modifier
-        .clickable { expanded = true }
-) {
-    OutlinedTextField(
+        .fillMaxWidth(),
+    verticalAlignment = Alignment.CenterVertically,
+    horizontalArrangement = Arrangement.Center
+)
+
+{
+    TextField(
         value = selectedDate?.toString() ?: "",
-        onValueChange = { },
+        onValueChange = {},
         label = { Text(text = "Date") },
         readOnly = true,
-//        modifier = Modifier.clickable { expanded = true }
     )
 
-
-
-    if (expanded) {
-        Column {
-
-            DatePicker(
-                state = rememberDatePickerState(tempDate as Long),
-                modifier = Modifier,
-                dateFormatter = DatePickerDefaults.dateFormatter(),
-                title = null,
-                headline = null,
-                showModeToggle = false,
-                colors = DatePickerDefaults.colors(),
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Button(
-                onClick = {
-                    onDateSelected(LocalDate.ofEpochDay(tempDate as Long))
-
-                    expanded = false
-                }
-            ) {
-                Text("OK")
-            }
-
-        }
+    Box(modifier = Modifier
+        .width(50.dp)
+        .height(50.dp)
+        .background(color = Color.Green)
+        .clickable {
+            datePicker.show()
+            Log.d("Just the Box", "TextField Clicked")
+        },
+        contentAlignment = Alignment.Center
+    ){
+        Icon(imageVector = Icons.Default.DateRange, contentDescription = "", tint = Color.Black, modifier = Modifier.fillMaxSize())
     }
 }
 }
+
 
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -394,7 +408,8 @@ fun addingPage(mainViewModel: MainViewModel,navController: NavHostController){
             style = TextStyle(fontFamily = androidx.compose.ui.text.font.FontFamily.Cursive),
             color = Color.White
         )
-        
+
+
         TextField(
             modifier = Modifier.padding(top = 20.dp),
             value = location,
@@ -411,18 +426,6 @@ fun addingPage(mainViewModel: MainViewModel,navController: NavHostController){
                 selectedDate = it
             }
         )
-//        TextField(
-//            modifier = Modifier
-//                .padding(top = 20.dp),
-//            value = date,
-//            onValueChange = {
-//                    newText -> date = newText
-//            },
-//            label = {
-//                Text(text = "Date")
-//            },
-//            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-//        )
         TextField(
             modifier = Modifier.padding(top = 20.dp),
             value = details,
@@ -454,3 +457,4 @@ fun addingPage(mainViewModel: MainViewModel,navController: NavHostController){
         }
     }
 }
+
