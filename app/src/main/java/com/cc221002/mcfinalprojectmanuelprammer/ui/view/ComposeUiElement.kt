@@ -2,6 +2,7 @@ package com.cc221002.mcfinalprojectmanuelprammer.ui.view
 
 import android.app.DatePickerDialog
 import android.content.Context
+import android.graphics.drawable.shapes.Shape
 import android.os.Build
 import android.util.Log
 import android.widget.DatePicker
@@ -26,6 +27,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.AbsoluteCutCornerShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.BottomNavigation
@@ -55,6 +58,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
@@ -175,80 +180,77 @@ fun showTrips(mainViewModel: MainViewModel,navController: NavHostController) {
         items(trips.value) { trip ->
             Row (
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .padding(20.dp,15.dp)
+                    .shadow(elevation = 5.dp,shape = RoundedCornerShape(20.dp),clip = true)
+                    .clip(shape= RoundedCornerShape(20.dp))
                     .background(backgroundWhite)
-                    .height(200.dp)
+                    .border(1.dp, Color.Black, shape = RoundedCornerShape(20.dp))
+                    .background(backgroundWhite)
                     .clickable {
                         mainViewModel.showTripWithID(trip.id)
                         Log.d("Show Trips with ID", " Clicked")
                     },
                 horizontalArrangement = Arrangement.Center
             ){
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(20.dp)
-                        .border(1.dp, Color.Black, RectangleShape)
 
-                        .background(backgroundWhite),
-//                        .clickable { mainViewModel.showTripWithID(trip.id) },
-//                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = "Trip to:",
-                        textAlign = TextAlign.Center,
-                        fontSize = 25.sp,
+
+//                Row(
+//                modifier = Modifier
+//                    .shadow(elevation = 5.dp,shape = RoundedCornerShape(20.dp),)
+//                    .fillMaxWidth()
+//                    .clip(shape= RoundedCornerShape(20.dp))
+//                    .background(backgroundWhite)
+//                    .border(1.dp, Color.Black, shape = RoundedCornerShape(20.dp))
+//                    .background(backgroundWhite),
+//
+//            ) {
+                    Spacer(
+                        modifier = Modifier
+                            .padding(5.dp)
+                    )
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        horizontalAlignment = Alignment.Start,
+                        verticalArrangement = Arrangement.Top
+                    ) {
+
+                        Text(
+                            text = "Trip to:",
+                            textAlign = TextAlign.Start,
+                            fontSize = 20.sp,
+                            style = TextStyle(fontFamily = FontFamily.Monospace),
+                            color = Color.Black,
+                            modifier = Modifier
+                                .padding(5.dp, 15.dp, 0.dp, 5.dp)
+                                .width(250.dp)
+                        )
+
+                        Text(
+                            text = trip.location,
+                            textAlign = TextAlign.Start,
+                            fontSize = 35.sp,
+                            fontWeight = FontWeight.Bold,
+                            style = TextStyle(fontFamily = FontFamily.Monospace),
+                            color = Color.Black,
+                            modifier = Modifier
+                                .padding(5.dp)
+                                .width(250.dp)
+                        )
+                        Text(
+                            text = trip.date,
+                        textAlign = TextAlign.Start,
+                        fontSize = 20.sp,
                         style = TextStyle(fontFamily = FontFamily.Monospace),
                         color = Color.Black,
                         modifier = Modifier
-                            .padding(15.dp)
+                            .padding(5.dp, 25.dp, 0.dp, 15.dp)
                             .width(250.dp)
-                    )
+                        )
+                    }
                 }
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(20.dp)
-                        .border(1.dp, Color.Black, RectangleShape)
-
-                        .background(backgroundWhite),
-//                        .clickable { mainViewModel.showTripWithID(trip.id) },
-//                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = trip.location,
-                        textAlign = TextAlign.Center,
-                        fontSize = 25.sp,
-                        style = TextStyle(fontFamily = FontFamily.Monospace),
-                        color = Color.Black,
-                        modifier = Modifier
-                            .padding(15.dp)
-                            .width(250.dp)
-                    )
-                }
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(20.dp)
-                        .border(1.dp, Color.Black, RectangleShape)
-
-                        .background(backgroundWhite),
-//                        .clickable { mainViewModel.showTripWithID(trip.id) },
-//                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(
-                        text = trip.date,
-                        textAlign = TextAlign.Center,
-                        fontSize = 25.sp,
-                        style = TextStyle(fontFamily = FontFamily.Monospace),
-                        color = Color.Black,
-                        modifier = Modifier
-                            .padding(15.dp)
-                            .width(250.dp)
-                    )
-                }
-            }
+//            }
         }
         }
     }
