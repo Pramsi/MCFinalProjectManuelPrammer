@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -180,30 +181,19 @@ fun showTrips(mainViewModel: MainViewModel,navController: NavHostController) {
         items(trips.value) { trip ->
             Row (
                 modifier = Modifier
-                    .padding(20.dp,15.dp)
-                    .shadow(elevation = 5.dp,shape = RoundedCornerShape(20.dp),clip = true)
-                    .clip(shape= RoundedCornerShape(20.dp))
+                    .padding(20.dp, 15.dp)
+                    .shadow(elevation = 5.dp, shape = RoundedCornerShape(20.dp), clip = true)
+                    .clip(shape = RoundedCornerShape(20.dp))
                     .background(backgroundWhite)
                     .border(1.dp, Color.Black, shape = RoundedCornerShape(20.dp))
                     .background(backgroundWhite)
                     .clickable {
                         mainViewModel.showTripWithID(trip.id)
                         Log.d("Show Trips with ID", " Clicked")
+                        Log.d("Show Trips with ID", "$trip")
                     },
                 horizontalArrangement = Arrangement.Center
             ){
-
-
-//                Row(
-//                modifier = Modifier
-//                    .shadow(elevation = 5.dp,shape = RoundedCornerShape(20.dp),)
-//                    .fillMaxWidth()
-//                    .clip(shape= RoundedCornerShape(20.dp))
-//                    .background(backgroundWhite)
-//                    .border(1.dp, Color.Black, shape = RoundedCornerShape(20.dp))
-//                    .background(backgroundWhite),
-//
-//            ) {
                     Spacer(
                         modifier = Modifier
                             .padding(5.dp)
@@ -250,7 +240,7 @@ fun showTrips(mainViewModel: MainViewModel,navController: NavHostController) {
                         )
                     }
                 }
-//            }
+
         }
         }
     }
@@ -272,35 +262,131 @@ fun showTrips(mainViewModel: MainViewModel,navController: NavHostController) {
 
 @Composable
 fun showSingleTripModal(mainViewModel: MainViewModel, navController: NavHostController) {
-    val tripsState = mainViewModel.trips.collectAsState()
+    val selectedTrip = mainViewModel.selectedTrip.collectAsState()
 
     LazyColumn(
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.DarkGray),
+            .background(backgroundGreen)
     ) {
-        items(tripsState.value) { trip ->
+        items(1) {    selectedTrip.value?.let { trip ->
+
             Row(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp),
-//                    .clickable { mainViewModel.editJoke(joke) },
+                    .padding(20.dp, 50.dp, 20.dp, 0.dp)
+                    .shadow(elevation = 5.dp, shape = RoundedCornerShape(20.dp), clip = true)
+                    .clip(shape = RoundedCornerShape(20.dp))
+                    .background(backgroundWhite)
+                    .border(1.dp, Color.Black, shape = RoundedCornerShape(20.dp))
+                    .background(backgroundWhite)
+                , horizontalArrangement = Arrangement.Center
+            ) {
+                Spacer(
+                    modifier = Modifier
+                        .padding(5.dp)
+                )
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalAlignment = Alignment.Start,
+                    verticalArrangement = Arrangement.Top
+                ) {
+
+                    Text(
+                        text = "Trip to:",
+                        textAlign = TextAlign.Start,
+                        fontSize = 20.sp,
+                        style = TextStyle(fontFamily = FontFamily.Monospace),
+                        color = Color.Black,
+                        modifier = Modifier
+                            .padding(5.dp, 15.dp, 0.dp, 5.dp)
+                            .width(250.dp)
+                    )
+
+                    Text(
+                        text = trip.location,
+                        textAlign = TextAlign.Start,
+                        fontSize = 35.sp,
+                        fontWeight = FontWeight.Bold,
+                        style = TextStyle(fontFamily = FontFamily.Monospace),
+                        color = Color.Black,
+                        modifier = Modifier
+                            .padding(5.dp)
+                            .width(250.dp)
+                    )
+                    Text(
+                        text = trip.date,
+                        textAlign = TextAlign.Start,
+                        fontSize = 20.sp,
+                        style = TextStyle(fontFamily = FontFamily.Monospace),
+                        color = Color.Black,
+                        modifier = Modifier
+                            .padding(5.dp, 25.dp, 0.dp, 15.dp)
+                            .width(250.dp)
+                    )
+                }
+            }
+            Row(
+                modifier = Modifier
+                    .height(500.dp)
+                    .padding(20.dp, 0.dp)
+                    .shadow(elevation = 5.dp, shape = RoundedCornerShape(20.dp), clip = true)
+                    .clip(shape = RoundedCornerShape(20.dp))
+                    .background(backgroundWhite)
+                    .border(1.dp, Color.Black, shape = RoundedCornerShape(20.dp))
+                    .background(backgroundWhite),
                 horizontalArrangement = Arrangement.Center
             ) {
-                Text(
-                    text = "${trip.date}",
-                    textAlign = TextAlign.Center,
-                    fontSize = 25.sp,
-                    style = TextStyle(fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace),
-                    color = Color.White,
+                Spacer(
                     modifier = Modifier
-                        .border(1.dp, Color.Yellow, RectangleShape)
-                        .padding(15.dp)
-                        .width(250.dp)
+                        .padding(5.dp)
                 )
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight(),
+                    horizontalAlignment = Alignment.Start,
+                    verticalArrangement = Arrangement.Top
+                ) {
+                    Text(
+                        text = "${trip.details}",
+                        textAlign = TextAlign.Start,
+                        fontSize = 20.sp,
+                        style = TextStyle(fontFamily = FontFamily.Monospace),
+                        color = Color.Black,
+                        modifier = Modifier
+                            .padding(5.dp, 15.dp, 0.dp, 5.dp)
+                            .width(250.dp)
+                    )
+
+                    Text(
+                        text = "${trip.rating}",
+                        textAlign = TextAlign.Start,
+                        fontSize = 20.sp,
+                        style = TextStyle(fontFamily = FontFamily.Monospace),
+                        color = Color.Black,
+                        modifier = Modifier
+                            .padding(5.dp, 15.dp, 0.dp, 5.dp)
+                            .width(250.dp)
+                    )
+                    /*TODO Finish Rating*/
+
+
+                    Button(onClick = { /*TODO*/ }, shape = RectangleShape) {
+                        Text(text = "Delete")
+                    }
+
+                    Button(onClick = { /*TODO*/ }) {
+                        Text(text = "Edit")
+                    }
+
+                }
             }
+        }
         }
     }
     Box(

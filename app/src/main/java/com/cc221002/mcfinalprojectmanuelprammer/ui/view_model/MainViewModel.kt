@@ -18,6 +18,10 @@ class MainViewModel (private val dao: TripsDao): ViewModel(){
     private val _trips = MutableStateFlow<List<SingleTrip>>(emptyList())
     val trips: StateFlow<List<SingleTrip>> = _trips.asStateFlow()
 
+    private val _selectedTrip = MutableStateFlow<SingleTrip?>(null)
+    val selectedTrip: StateFlow<SingleTrip?> = _selectedTrip.asStateFlow()
+
+
     fun insertPreTrips(){
         val hardcodedSamples = listOf(
             SingleTrip("Austria","24.10.2022", "It was very funny", "4"),
@@ -52,9 +56,9 @@ class MainViewModel (private val dao: TripsDao): ViewModel(){
 
     fun showTripWithID(id:Int) {
         viewModelScope.launch {
-            _mainViewState.update { it.copy(openTripDialog = true) }
             dao.getTripWithID(id).collect { trip ->
-                _trips.value = trip
+                _selectedTrip.value = trip.firstOrNull() // To get the single trip
+                _mainViewState.update { it.copy(openTripDialog = true) }
             }
         }
     }
@@ -62,6 +66,7 @@ class MainViewModel (private val dao: TripsDao): ViewModel(){
     fun dismissSingleTripModal(){
         viewModelScope.launch {
             _mainViewState.update { it.copy(openTripDialog = false) }
+            _selectedTrip.value = null
             getTrips()
         }
     }
