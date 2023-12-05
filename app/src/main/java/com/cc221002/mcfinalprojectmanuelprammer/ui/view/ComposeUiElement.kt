@@ -40,7 +40,9 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
@@ -67,6 +69,13 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Gray
+import androidx.compose.ui.graphics.Color.Companion.Green
+import androidx.compose.ui.graphics.Color.Companion.Magenta
+import androidx.compose.ui.graphics.Color.Companion.Red
+import androidx.compose.ui.graphics.Color.Companion.Transparent
+import androidx.compose.ui.graphics.Color.Companion.White
+import androidx.compose.ui.graphics.ColorFilter.Companion.tint
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -85,8 +94,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.cc221002.mcfinalprojectmanuelprammer.R
 import com.cc221002.mcfinalprojectmanuelprammer.data.model.SingleTrip
+import com.cc221002.mcfinalprojectmanuelprammer.ui.theme.adventureRed
 import com.cc221002.mcfinalprojectmanuelprammer.ui.theme.backgroundGreen
 import com.cc221002.mcfinalprojectmanuelprammer.ui.theme.backgroundWhite
+import com.cc221002.mcfinalprojectmanuelprammer.ui.theme.orange
 import com.cc221002.mcfinalprojectmanuelprammer.ui.view_model.MainViewModel
 import kotlinx.coroutines.delay
 import java.time.LocalDate
@@ -240,20 +251,8 @@ fun showTrips(mainViewModel: MainViewModel,navController: NavHostController) {
                             .padding(5.dp, 25.dp, 0.dp, 15.dp)
                             .width(250.dp)
                         )
-                        IconButton(
-                                onClick = {
-                                    mainViewModel.deleteTrip(trip)
-                                    Log.d("Delete", "Clicked")
-                                    Log.d("Delete", "$trip")
-                                          },
-
-                        ) {
-                        androidx.compose.material.Icon(Icons.Default.Delete,"Delete",tint = Color.Black)
                     }
-                    }
-
                 }
-
         }
         }
     }
