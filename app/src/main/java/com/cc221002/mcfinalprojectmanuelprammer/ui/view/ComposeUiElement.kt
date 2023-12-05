@@ -292,8 +292,8 @@ fun showSingleTripModal(mainViewModel: MainViewModel, navController: NavHostCont
                     .clip(shape = RoundedCornerShape(20.dp))
                     .background(backgroundWhite)
                     .border(1.dp, Color.Black, shape = RoundedCornerShape(20.dp))
-                    .background(backgroundWhite)
-                , horizontalArrangement = Arrangement.Center
+                    .background(backgroundWhite),
+                horizontalArrangement = Arrangement.Center
             ) {
                 Spacer(
                     modifier = Modifier
@@ -352,16 +352,12 @@ fun showSingleTripModal(mainViewModel: MainViewModel, navController: NavHostCont
                     .background(backgroundWhite),
                 horizontalArrangement = Arrangement.Center
             ) {
-                Spacer(
-                    modifier = Modifier
-                        .padding(5.dp)
-                )
 
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .fillMaxHeight(),
-                    horizontalAlignment = Alignment.Start,
+                    horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Top
                 ) {
                     Text(
@@ -371,8 +367,8 @@ fun showSingleTripModal(mainViewModel: MainViewModel, navController: NavHostCont
                         style = TextStyle(fontFamily = FontFamily.Monospace),
                         color = Color.Black,
                         modifier = Modifier
-                            .padding(5.dp, 15.dp, 0.dp, 5.dp)
-                            .width(250.dp)
+                            .padding(25.dp, 15.dp, 25.dp, 15.dp)
+                            .fillMaxWidth()
                     )
 
                     Text(
@@ -388,14 +384,35 @@ fun showSingleTripModal(mainViewModel: MainViewModel, navController: NavHostCont
                     /*TODO Finish Rating*/
 
 
-                    Button(onClick = { /*TODO*/ }, shape = RectangleShape) {
-                        Text(text = "Delete")
-                    }
 
-                    Button(onClick = { /*TODO*/ }) {
-                        Text(text = "Edit")
-                    }
+                    Row (
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        verticalAlignment = Alignment.Bottom,
+                        horizontalArrangement = Arrangement.Center
 
+
+                    ){
+                        Button(onClick = { mainViewModel.deleteTrip(trip)},
+                            shape = RectangleShape,
+                            colors = ButtonColors(Transparent, White, Magenta, Gray),
+                            modifier = Modifier
+                                .background(adventureRed)
+                                .fillParentMaxWidth(0.5f)
+                        ) {
+                            Text(text = "Delete")
+                        }
+
+                        Button(onClick = { /*TODO*/ },
+                            shape = RectangleShape,
+                            colors = ButtonColors(Transparent, White, Magenta, Gray),
+                            modifier = Modifier
+                                .background(backgroundGreen)
+                                .fillParentMaxWidth(0.5f)
+                        ) {
+                            Text(text = "Edit")
+                        }
+                    }
                 }
             }
         }
