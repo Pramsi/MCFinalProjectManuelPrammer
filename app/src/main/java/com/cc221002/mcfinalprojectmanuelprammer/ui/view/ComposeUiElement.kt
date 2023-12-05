@@ -32,10 +32,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.BottomNavigation
+import androidx.compose.material.IconButton
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -248,7 +250,18 @@ fun showTrips(mainViewModel: MainViewModel,navController: NavHostController) {
                             .padding(5.dp, 25.dp, 0.dp, 15.dp)
                             .width(250.dp)
                         )
+                        IconButton(
+                                onClick = {
+                                    mainViewModel.deleteTrip(trip)
+                                    Log.d("Delete", "Clicked")
+                                    Log.d("Delete", "$trip")
+                                          },
+
+                        ) {
+                        androidx.compose.material.Icon(Icons.Default.Delete,"Delete",tint = Color.Black)
                     }
+                    }
+
                 }
 //            }
         }

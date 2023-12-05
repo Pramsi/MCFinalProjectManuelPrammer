@@ -66,5 +66,18 @@ class MainViewModel (private val dao: TripsDao): ViewModel(){
         }
     }
 
+
+    fun deleteTrip(singleTrip: SingleTrip) {
+        viewModelScope.launch {
+            dao.deleteTrip(singleTrip)
+        }
+    }
+
+//    fun wipeDatabase(){
+//        viewModelScope.launch{
+//            dao.wipeDatabase()
+//        }
+//    }
+
 }
 
