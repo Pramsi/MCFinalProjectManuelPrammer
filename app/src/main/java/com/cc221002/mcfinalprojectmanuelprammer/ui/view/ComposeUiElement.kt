@@ -371,17 +371,7 @@ fun showSingleTripModal(mainViewModel: MainViewModel, navController: NavHostCont
                             .fillMaxWidth()
                     )
 
-                    Text(
-                        text = "${trip.rating}",
-                        textAlign = TextAlign.Start,
-                        fontSize = 20.sp,
-                        style = TextStyle(fontFamily = FontFamily.Monospace),
-                        color = Color.Black,
-                        modifier = Modifier
-                            .padding(5.dp, 15.dp, 0.dp, 5.dp)
-                            .width(250.dp)
-                    )
-                    /*TODO Finish Rating*/
+                    RatingStarsWithText(trip.rating)
 
 
 
@@ -577,4 +567,61 @@ fun addingPage(mainViewModel: MainViewModel,navController: NavHostController){
         }
     }
 }
+
+
+@Composable
+fun RatingStarsWithText(rating: String) {
+    val numericRating = rating.toIntOrNull() ?: 0 // Convert String to Int, default to 0 if conversion fails
+
+    Text(
+        text = "Rating: ",
+        textAlign = TextAlign.Start,
+        fontSize = 20.sp,
+        style = TextStyle(fontFamily = FontFamily.Monospace),
+        color = Color.Black,
+        modifier = Modifier.padding(5.dp, 0.dp, 0.dp, 0.dp)
+    )
+    Box() {
+        // Draw five gray stars
+        Row(
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            repeat(5) {
+                Icon(
+                    imageVector = Icons.Default.Star,
+                    contentDescription = "Gray Star",
+                    modifier = Modifier
+                        .size(24.dp)
+                        .padding(end = 4.dp), // Adjust padding as needed
+                    tint = Gray
+                )
+            }
+        }
+
+        // Overlay yellow stars based on the rating value
+        Row(
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            repeat(numericRating) {
+                Icon(
+                    imageVector = Icons.Default.Star,
+                    contentDescription = "Yellow Star",
+                    modifier = Modifier
+                        .size(24.dp)
+                        .padding(end = 4.dp), // Adjust padding as needed
+                    tint = orange
+                )
+            }
+        }
+    }
+
+    // Display text representation of the rating
+
+}
+
+
+
+
 
