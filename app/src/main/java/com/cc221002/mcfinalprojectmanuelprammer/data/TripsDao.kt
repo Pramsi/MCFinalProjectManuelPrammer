@@ -20,6 +20,9 @@ interface TripsDao {
     @Delete
     suspend fun deleteTrip(singleTrip: SingleTrip)
 
+//    @Query("DELETE FROM TripsList")
+//     fun wipeDatabase()
+
     @Query("SELECT * FROM TripsList")
     fun getTrips(): Flow<List<SingleTrip>>
 
