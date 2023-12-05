@@ -54,6 +54,24 @@ class MainViewModel (private val dao: TripsDao): ViewModel(){
         }
     }
 
+
+    fun editTrip(singleTrip: SingleTrip){
+        _mainViewState.update { it.copy(openEditDialog = true, editSingleTrip = singleTrip) }
+    }
+
+    fun saveEditedTrip(singleTrip: SingleTrip){
+        dismissEditDialog()
+        viewModelScope.launch {
+            dao.updateTrip(singleTrip)
+            getTrips()
+        }
+    }
+
+    fun dismissEditDialog(){
+        _mainViewState.update { it.copy(openEditDialog = false) }
+    }
+
+
     fun showTripWithID(id:Int) {
         viewModelScope.launch {
             dao.getTripWithID(id).collect { trip ->
@@ -62,6 +80,8 @@ class MainViewModel (private val dao: TripsDao): ViewModel(){
             }
         }
     }
+
+
 
     fun dismissSingleTripModal(){
         viewModelScope.launch {
@@ -75,6 +95,7 @@ class MainViewModel (private val dao: TripsDao): ViewModel(){
     fun deleteTrip(singleTrip: SingleTrip) {
         viewModelScope.launch {
             dao.deleteTrip(singleTrip)
+//            _mainViewState.update { it.copy(openTripDialog = false) }
         }
     }
 

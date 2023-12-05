@@ -1,13 +1,8 @@
 package com.cc221002.mcfinalprojectmanuelprammer.ui.view
 
 import android.app.DatePickerDialog
-import android.content.Context
-import android.graphics.drawable.shapes.Shape
 import android.os.Build
 import android.util.Log
-import android.widget.DatePicker
-import android.widget.Space
-import android.window.SplashScreen
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -28,31 +23,25 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.AbsoluteCutCornerShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.BottomNavigation
-import androidx.compose.material.IconButton
-import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -65,17 +54,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Gray
-import androidx.compose.ui.graphics.Color.Companion.Green
 import androidx.compose.ui.graphics.Color.Companion.Magenta
-import androidx.compose.ui.graphics.Color.Companion.Red
 import androidx.compose.ui.graphics.Color.Companion.Transparent
 import androidx.compose.ui.graphics.Color.Companion.White
-import androidx.compose.ui.graphics.ColorFilter.Companion.tint
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -102,7 +85,6 @@ import com.cc221002.mcfinalprojectmanuelprammer.ui.view_model.MainViewModel
 import kotlinx.coroutines.delay
 import java.time.LocalDate
 import java.util.Calendar
-import java.util.Date
 
 sealed class Screen(val route: String) {
     object First: Screen("first")
@@ -168,6 +150,7 @@ fun BottomNavigationBar(navController: NavHostController, selectedScreen: Screen
 }
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun showTrips(mainViewModel: MainViewModel,navController: NavHostController) {
     val trips = mainViewModel.trips.collectAsState()
@@ -272,6 +255,7 @@ fun showTrips(mainViewModel: MainViewModel,navController: NavHostController) {
     }
 }
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun showSingleTripModal(mainViewModel: MainViewModel, navController: NavHostController) {
     val selectedTrip = mainViewModel.selectedTrip.collectAsState()
@@ -383,7 +367,9 @@ fun showSingleTripModal(mainViewModel: MainViewModel, navController: NavHostCont
 
 
                     ){
-                        Button(onClick = { mainViewModel.deleteTrip(trip)},
+                        Button(onClick = {
+                            mainViewModel.deleteTrip(trip)
+                            },
                             shape = RectangleShape,
                             colors = ButtonColors(Transparent, White, Magenta, Gray),
                             modifier = Modifier
@@ -393,7 +379,7 @@ fun showSingleTripModal(mainViewModel: MainViewModel, navController: NavHostCont
                             Text(text = "Delete")
                         }
 
-                        Button(onClick = { /*TODO*/ },
+                        Button(onClick = { mainViewModel.editTrip(trip)},
                             shape = RectangleShape,
                             colors = ButtonColors(Transparent, White, Magenta, Gray),
                             modifier = Modifier
@@ -408,6 +394,10 @@ fun showSingleTripModal(mainViewModel: MainViewModel, navController: NavHostCont
         }
         }
     }
+    Column {
+        editTripModal(mainViewModel)
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -444,7 +434,7 @@ fun showSingleTripModal(mainViewModel: MainViewModel, navController: NavHostCont
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun DatePickerField(
-    selectedDate: LocalDate?,
+    selectedDate: String,
     onDateSelected: (LocalDate) -> Unit
 ) {
     val context = LocalContext.current
@@ -464,24 +454,25 @@ fun DatePickerField(
     }
 
 Row(
-    modifier = Modifier
-        .fillMaxWidth(),
+    modifier = Modifier.fillMaxWidth(),
     verticalAlignment = Alignment.CenterVertically,
     horizontalArrangement = Arrangement.Center
 )
 
 {
     TextField(
-        value = selectedDate?.toString() ?: "",
+        value = selectedDate,
         onValueChange = {},
         label = { Text(text = "Date") },
         readOnly = true,
+        modifier = Modifier
+            .width(230.dp)
     )
 
     Box(modifier = Modifier
         .width(50.dp)
-        .height(50.dp)
-        .background(color = Color.Green)
+        .height(55.dp)
+        .background(color = backgroundWhite)
         .clickable {
             datePicker.show()
             Log.d("Just the Box", "TextField Clicked")
@@ -530,12 +521,12 @@ fun addingPage(mainViewModel: MainViewModel,navController: NavHostController){
                 Text(text = "Location")
             }
         )
+        Spacer(modifier = Modifier.padding(top = 20.dp))
         DatePickerField(
-            selectedDate = selectedDate,
-            onDateSelected = {
-                selectedDate = it
-            }
-        )
+            selectedDate = selectedDate.toString()
+        ) {
+            selectedDate = it
+        }
         TextField(
             modifier = Modifier.padding(top = 20.dp),
             value = details,
@@ -616,9 +607,87 @@ fun RatingStarsWithText(rating: String) {
             }
         }
     }
+}
 
-    // Display text representation of the rating
+@RequiresApi(Build.VERSION_CODES.O)
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun editTripModal(mainViewModel: MainViewModel){
+    val state = mainViewModel.mainViewState.collectAsState()
 
+    if(state.value.openEditDialog){
+        var location by rememberSaveable {
+            mutableStateOf(state.value.editSingleTrip.location)
+        }
+        var date by rememberSaveable {
+            mutableStateOf(state.value.editSingleTrip.date)
+        }
+        var details by rememberSaveable {
+            mutableStateOf(state.value.editSingleTrip.details)
+        }
+        var rating by rememberSaveable {
+            mutableStateOf(state.value.editSingleTrip.rating)
+        }
+
+
+        AlertDialog(
+            onDismissRequest = {
+                mainViewModel.dismissEditDialog()
+            },
+            backgroundColor = backgroundGreen,
+            text = {
+                Column {
+                    TextField(
+                        modifier = Modifier.padding(top = 20.dp),
+                        value = location,
+                        onValueChange = { newText -> location = newText },
+                        label = { Text(text = "Location") },
+                        textStyle = TextStyle(background = Transparent)
+                    )
+                    Spacer(modifier = Modifier.padding(top = 20.dp))
+                    DatePickerField(
+                        selectedDate = date
+                    ) {
+                        date = it.toString()
+                    }
+                    TextField(
+                        modifier = Modifier.padding(top = 20.dp),
+                        value = details,
+                        onValueChange = { newText -> details = newText },
+                        label = { Text(text = "Details" ) }
+                    )
+                    TextField(
+                        modifier = Modifier.padding(top = 20.dp),
+                        value = rating,
+                        onValueChange = { newText -> rating = newText },
+                        label = { Text(text = "Rating" ) }
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        mainViewModel.saveEditedTrip(
+                            SingleTrip(
+                                location,
+                                date,
+                                details,
+                                rating,
+                                state.value.editSingleTrip.id
+                            )
+                        )
+                    },
+                    colors = ButtonDefaults.buttonColors(orange),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 105.dp)
+                        .padding(vertical = 16.dp)
+                ) {
+                    Text("Save", color = Color.Black)
+                }
+            }
+        )
+    }
 }
 
 
