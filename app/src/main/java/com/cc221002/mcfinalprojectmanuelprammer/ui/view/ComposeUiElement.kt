@@ -3,6 +3,7 @@ package com.cc221002.mcfinalprojectmanuelprammer.ui.view
 import android.app.DatePickerDialog
 import android.os.Build
 import android.util.Log
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
@@ -511,6 +512,10 @@ fun addingPage(mainViewModel: MainViewModel,navController: NavHostController) {
 
     var selectedDate by rememberSaveable { mutableStateOf(LocalDate.now()) }
 
+    val maxLocationInputLength = 50
+    val maxDetailsInputLength = 250
+    val mContext = LocalContext.current
+    val maxNumberInput= 5
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -557,7 +562,8 @@ fun addingPage(mainViewModel: MainViewModel,navController: NavHostController) {
                 modifier = Modifier.padding(top = 20.dp),
                 value = location,
                 onValueChange = { newText ->
-                    location = newText
+                    if(newText.text.length <= maxLocationInputLength) location = newText
+                    else Toast.makeText(mContext, "Cannot be more than 100 Characters", Toast.LENGTH_SHORT).show()
                 },
                 label = {
                     Text(text = "Location")
@@ -573,7 +579,8 @@ fun addingPage(mainViewModel: MainViewModel,navController: NavHostController) {
                 modifier = Modifier.padding(top = 20.dp),
                 value = details,
                 onValueChange = { newText ->
-                    details = newText
+                    if(newText.text.length <= maxDetailsInputLength) details = newText
+                    else Toast.makeText(mContext, "Cannot be more than 100 Characters", Toast.LENGTH_SHORT).show()
                 },
                 label = {
                     Text(text = "Details")
@@ -582,11 +589,18 @@ fun addingPage(mainViewModel: MainViewModel,navController: NavHostController) {
             TextField(
                 modifier = Modifier.padding(top = 20.dp),
                 value = rating,
-                onValueChange = { newText ->
-                    rating = newText
+                onValueChange = { newTextFieldValue ->
+                    val newText = newTextFieldValue.text
+
+                    if(newText.isEmpty() || newText.toIntOrNull() in 0..maxNumberInput){
+                        rating = newTextFieldValue
+                    } else {
+                        Toast.makeText(mContext, "Please choose a number between 0 and 5", Toast.LENGTH_SHORT).show()
+                        rating = rating.takeUnless { it.text.isEmpty() } ?: TextFieldValue("")
+                    }
                 },
                 label = {
-                    Text(text = "Rating in Number")
+                    Text(text = "Rating in Number (0-5)")
                 },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
@@ -683,7 +697,10 @@ fun editTripModal(mainViewModel: MainViewModel){
         var rating by rememberSaveable {
             mutableStateOf(state.value.editSingleTrip.rating)
         }
-
+        val maxLocationInputLength = 50
+        val maxDetailsInputLength = 250
+        val mContext = LocalContext.current
+        val maxNumberInput= 5
 
         AlertDialog(
             onDismissRequest = {
@@ -695,7 +712,9 @@ fun editTripModal(mainViewModel: MainViewModel){
                     TextField(
                         modifier = Modifier.padding(top = 20.dp),
                         value = location,
-                        onValueChange = { newText -> location = newText },
+                        onValueChange = { newText ->
+                            if(newText.length <= maxLocationInputLength) location = newText
+                            else Toast.makeText(mContext, "Cannot be more than 50 Characters", Toast.LENGTH_SHORT).show()},
                         label = { Text(text = "Location") },
                         textStyle = TextStyle(background = Transparent)
                     )
@@ -708,14 +727,24 @@ fun editTripModal(mainViewModel: MainViewModel){
                     TextField(
                         modifier = Modifier.padding(top = 20.dp),
                         value = details,
-                        onValueChange = { newText -> details = newText },
+                        onValueChange = { newText ->
+                            if(newText.length <= maxDetailsInputLength) details = newText
+                            else Toast.makeText(mContext, "Cannot be more than 250 Characters", Toast.LENGTH_SHORT).show()
+                                        },
                         label = { Text(text = "Details" ) }
                     )
                     TextField(
                         modifier = Modifier.padding(top = 20.dp),
                         value = rating,
-                        onValueChange = { newText -> rating = newText },
-                        label = { Text(text = "Rating" ) }
+                        onValueChange = { newText ->
+                            if(newText.isEmpty() || newText.toIntOrNull() in 0..maxNumberInput){
+                                rating = newText
+                            } else {
+                                Toast.makeText(mContext, "Please choose a number between 0 and 5", Toast.LENGTH_SHORT).show()
+                            }
+                        },
+                        label = { Text(text = "Rating" ) },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                     )
                 }
             },
