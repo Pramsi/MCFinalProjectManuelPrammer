@@ -4,6 +4,7 @@ import android.app.DatePickerDialog
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -60,6 +61,7 @@ import androidx.compose.ui.graphics.Color.Companion.Magenta
 import androidx.compose.ui.graphics.Color.Companion.Transparent
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -472,7 +474,9 @@ Row(
     Box(modifier = Modifier
         .width(50.dp)
         .height(55.dp)
+        .shadow(5.dp, RoundedCornerShape(5.dp))
         .background(color = backgroundWhite)
+        .clip(RoundedCornerShape(5.dp,5.dp,0.dp,0.dp))
         .clickable {
             datePicker.show()
             Log.d("Just the Box", "TextField Clicked")
@@ -488,73 +492,124 @@ Row(
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun addingPage(mainViewModel: MainViewModel,navController: NavHostController){
-    var location by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue("")) }
-    var details by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue("")) }
-    var rating by rememberSaveable (stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue("")) }
+fun addingPage(mainViewModel: MainViewModel,navController: NavHostController) {
+    var location by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(
+            TextFieldValue("")
+        )
+    }
+    var details by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(
+            TextFieldValue("")
+        )
+    }
+    var rating by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(
+            TextFieldValue("")
+        )
+    }
 
     var selectedDate by rememberSaveable { mutableStateOf(LocalDate.now()) }
 
-    Column (
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .background(Color.DarkGray),
-        verticalArrangement = Arrangement.Center,
+            .background(backgroundGreen),
+        verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = "ADD NEW TRIP",
-            fontSize = 50.sp,
-            style = TextStyle(fontFamily = androidx.compose.ui.text.font.FontFamily.Cursive),
-            color = Color.White
-        )
-
-
-        TextField(
-            modifier = Modifier.padding(top = 20.dp),
-            value = location,
-            onValueChange = {
-                newText -> location = newText
-            },
-            label = {
-                Text(text = "Location")
-            }
-        )
-        Spacer(modifier = Modifier.padding(top = 20.dp))
-        DatePickerField(
-            selectedDate = selectedDate.toString()
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp)
+//                .clip(RoundedCornerShape(100))
+//                .background(backgroundWhite)
+//            .shadow(5.dp, RoundedCornerShape(100))
+            , contentAlignment = Alignment.Center
         ) {
-            selectedDate = it
-        }
-        TextField(
-            modifier = Modifier.padding(top = 20.dp),
-            value = details,
-            onValueChange = {
-                    newText -> details = newText
-            },
-            label = {
-                Text(text = "Details")
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                translate(left = 0f, top = -125f) {
+                    drawCircle(backgroundWhite, radius = 225.dp.toPx())
+                }
             }
-        )
-        TextField(
-            modifier = Modifier.padding(top = 20.dp),
-            value = rating,
-            onValueChange = {
-                    newText -> rating = newText
-            },
-            label = {
-                Text(text = "Rating in Number")
-            },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-        )
-        Button(
-            onClick = { mainViewModel.saveButton(SingleTrip(location.text, selectedDate.toString(), /*date.text,*/ details.text, rating.text)); navController.navigate(Screen.First.route)},
-            modifier = Modifier.padding(top = 20.dp),
-            colors = ButtonDefaults.buttonColors(Color.Yellow),
+            Text(
+                text = "ADD NEW TRIP",
+                fontWeight = FontWeight.Bold,
+                fontSize = 50.sp,
+                style = TextStyle(fontFamily = FontFamily.SansSerif),
+                color = Color.Black
+            )
+        }
 
+        Spacer(modifier = Modifier.size(100.dp))
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+//                .verticalScroll(rememberScrollState())
+//                .background(backgroundGreen),
+            , verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+
+            TextField(
+                modifier = Modifier.padding(top = 20.dp),
+                value = location,
+                onValueChange = { newText ->
+                    location = newText
+                },
+                label = {
+                    Text(text = "Location")
+                }
+            )
+            Spacer(modifier = Modifier.padding(top = 20.dp))
+            DatePickerField(
+                selectedDate = selectedDate.toString()
             ) {
-            Text(text = "Save", fontSize = 20.sp)
+                selectedDate = it
+            }
+            TextField(
+                modifier = Modifier.padding(top = 20.dp),
+                value = details,
+                onValueChange = { newText ->
+                    details = newText
+                },
+                label = {
+                    Text(text = "Details")
+                }
+            )
+            TextField(
+                modifier = Modifier.padding(top = 20.dp),
+                value = rating,
+                onValueChange = { newText ->
+                    rating = newText
+                },
+                label = {
+                    Text(text = "Rating in Number")
+                },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+            )
+            Spacer(modifier = Modifier.size(100.dp))
+            Button(
+                onClick = {
+                    mainViewModel.saveButton(
+                        SingleTrip(
+                            location.text,
+                            selectedDate.toString(), /*date.text,*/
+                            details.text,
+                            rating.text
+                        )
+                    ); navController.navigate(Screen.First.route)
+                },
+                modifier = Modifier
+                    .padding(top = 20.dp)
+                    .shadow(elevation = 5.dp, shape = RoundedCornerShape(20.dp)),
+                colors = ButtonDefaults.buttonColors(orange),
+
+                ) {
+                Text(text = "Save", fontSize = 20.sp)
+            }
         }
     }
 }
