@@ -22,17 +22,17 @@ class MainViewModel (private val dao: TripsDao): ViewModel(){
     val selectedTrip: StateFlow<SingleTrip?> = _selectedTrip.asStateFlow()
 
 
-    fun insertPreTrips(){
-        val hardcodedSamples = listOf(
-            SingleTrip("Austria","24.10.2022", "It was very funny", "4"),
-            SingleTrip("Kroatien","28.11.2022", "It was also very funny", "3")
-
-        )
-        viewModelScope.launch{
-            for (trip in hardcodedSamples)
-                dao.insertTrip(trip)
-        }
-    }
+//    fun insertPreTrips(){
+//        val hardcodedSamples = listOf(
+//            SingleTrip("Austria","24.10.2022", "It was very funny", "4"),
+//            SingleTrip("Kroatien","28.11.2022", "It was also very funny", "3")
+//
+//        )
+//        viewModelScope.launch{
+//            for (trip in hardcodedSamples)
+//                dao.insertTrip(trip)
+//        }
+//    }
 
     fun selectScreen(screen: Screen){
         _mainViewState.update { it.copy(selectedScreen = screen) }

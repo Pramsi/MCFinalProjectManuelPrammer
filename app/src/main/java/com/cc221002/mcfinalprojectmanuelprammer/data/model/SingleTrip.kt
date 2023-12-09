@@ -10,6 +10,7 @@ data class SingleTrip (
     val date: String,
     val details: String,
     val rating: String,
+    val imageUri: String?,
 //    val picture,
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
 )

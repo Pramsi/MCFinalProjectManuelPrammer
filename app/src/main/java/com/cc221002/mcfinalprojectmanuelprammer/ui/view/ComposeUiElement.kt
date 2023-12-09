@@ -640,16 +640,38 @@ fun addingPage(mainViewModel: MainViewModel,navController: NavHostController, ca
                 },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
-            TextField(
-                modifier = Modifier.padding(top = 20.dp),
-                value = capturedImageUri.toString(),
-                onValueChange = { newText ->
-                    capturedImageUri = newText
-                },
-                label = {
-                    Text(text = "Image")
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                TextField(
+                    value = capturedImageUri.toString(),
+                    onValueChange = { newText ->
+                        capturedImageUri = newText
+                    },
+                    label = {
+                        Text(text = "Image")
+                    },
+                    readOnly = true,
+                    modifier = Modifier
+                        .width(230.dp)
+                        .padding(top = 20.dp)
+                )
+                Box(modifier = Modifier
+                    .width(50.dp)
+                    .height(55.dp)
+                    .shadow(5.dp, RoundedCornerShape(5.dp))
+                    .background(color = backgroundWhite)
+                    .clip(RoundedCornerShape(5.dp, 5.dp, 0.dp, 0.dp))
+                    .clickable {cameraViewModel.enableCameraPreview(true)
+                    },
+                    contentAlignment = Alignment.Center
+                ){
+                    Icon(imageVector = Icons.Default.AddCircle, contentDescription = "", tint = Color.Black, modifier = Modifier.fillMaxSize())
                 }
-            )
+            }
+
             Spacer(modifier = Modifier.size(100.dp))
             Button(
                 onClick = {
@@ -658,7 +680,8 @@ fun addingPage(mainViewModel: MainViewModel,navController: NavHostController, ca
                             location.text,
                             selectedDate.toString(), /*date.text,*/
                             details.text,
-                            rating.text
+                            rating.text,
+                            capturedImageUri,
                         )
                     ); navController.navigate(Screen.First.route)
                 },
@@ -670,12 +693,6 @@ fun addingPage(mainViewModel: MainViewModel,navController: NavHostController, ca
                 ) {
                 Text(text = "Save", fontSize = 20.sp)
             }
-        }
-        Button(
-            modifier = Modifier.padding(25.dp),
-            onClick = { cameraViewModel.enableCameraPreview(true) }
-        ) {
-            Icon(Icons.Default.Add, "Open Camera Preview")
         }
     }
     } else {
@@ -819,6 +836,7 @@ fun editTripModal(mainViewModel: MainViewModel){
                                 date,
                                 details,
                                 rating,
+                                "", //TODO the editing of image
                                 state.value.editSingleTrip.id
                             )
                         )
