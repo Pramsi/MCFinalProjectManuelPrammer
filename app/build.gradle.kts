@@ -81,5 +81,12 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 
 
+    // CameraX core library using the camera2 implementation
+    val camerax_version = "1.4.0-alpha02"
+    implementation("androidx.camera:camera-camera2:${camerax_version}")
+    implementation("androidx.camera:camera-lifecycle:${camerax_version}")
+    implementation("androidx.camera:camera-view:${camerax_version}")
 
+    // Coil for async image rendering from local directories or the internet
+    implementation("io.coil-kt:coil-compose:1.4.0")
 }
