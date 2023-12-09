@@ -1,10 +1,17 @@
 package com.cc221002.mcfinalprojectmanuelprammer.ui.view
 
 import android.app.DatePickerDialog
+import android.net.Uri
 import android.os.Build
 import android.util.Log
+import android.view.View
+import android.view.ViewTreeObserver
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.camera.camera2.internal.annotation.CameraExecutor
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
+import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -32,6 +39,7 @@ import androidx.compose.material.AlertDialog
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Star
@@ -74,20 +82,26 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.cc221002.mcfinalprojectmanuelprammer.R
 import com.cc221002.mcfinalprojectmanuelprammer.data.model.SingleTrip
+import com.cc221002.mcfinalprojectmanuelprammer.ui.CameraViewModel
 import com.cc221002.mcfinalprojectmanuelprammer.ui.theme.adventureRed
 import com.cc221002.mcfinalprojectmanuelprammer.ui.theme.backgroundGreen
 import com.cc221002.mcfinalprojectmanuelprammer.ui.theme.backgroundWhite
 import com.cc221002.mcfinalprojectmanuelprammer.ui.theme.orange
 import com.cc221002.mcfinalprojectmanuelprammer.ui.view_model.MainViewModel
 import kotlinx.coroutines.delay
+import java.io.File
+import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.util.Calendar
+import java.util.Locale
+import java.util.concurrent.ExecutorService
 
 sealed class Screen(val route: String) {
     object First: Screen("first")
@@ -96,9 +110,10 @@ sealed class Screen(val route: String) {
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun MainView(mainViewModel: MainViewModel) {
+fun MainView(mainViewModel: MainViewModel, cameraViewModel: CameraViewModel, previewView: PreviewView, imageCapture: ImageCapture, cameraExecutor: ExecutorService, directory: File) {
     val navController = rememberNavController()
     val loadingFinished = remember { mutableStateOf(false) }
+
 
     // Introduce a 2-second delay to simulate loading
     LaunchedEffect(Unit) {
@@ -122,7 +137,7 @@ fun MainView(mainViewModel: MainViewModel) {
 
                 composable(Screen.Second.route) {
                     mainViewModel.selectScreen(Screen.Second)
-                    addingPage(mainViewModel,navController)
+                    addingPage(mainViewModel,navController, cameraViewModel, previewView,imageCapture,cameraExecutor,directory, capturedImageUri = null)
 
                 }
             }
@@ -477,7 +492,7 @@ Row(
         .height(55.dp)
         .shadow(5.dp, RoundedCornerShape(5.dp))
         .background(color = backgroundWhite)
-        .clip(RoundedCornerShape(5.dp,5.dp,0.dp,0.dp))
+        .clip(RoundedCornerShape(5.dp, 5.dp, 0.dp, 0.dp))
         .clickable {
             datePicker.show()
             Log.d("Just the Box", "TextField Clicked")
@@ -493,7 +508,7 @@ Row(
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun addingPage(mainViewModel: MainViewModel,navController: NavHostController) {
+fun addingPage(mainViewModel: MainViewModel,navController: NavHostController, cameraViewModel: CameraViewModel, previewView: PreviewView, imageCapture: ImageCapture, cameraExecutor: ExecutorService, directory: File,capturedImageUri: String?) {
     var location by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(
             TextFieldValue("")
@@ -509,6 +524,12 @@ fun addingPage(mainViewModel: MainViewModel,navController: NavHostController) {
             TextFieldValue("")
         )
     }
+    var capturedImageUri by remember { mutableStateOf<String?>("") }
+    val handleImageCaptured: (String) -> Unit = { imageUri ->
+        capturedImageUri = imageUri
+    }
+
+    val camState = cameraViewModel.cameraState.collectAsState()
 
     var selectedDate by rememberSaveable { mutableStateOf(LocalDate.now()) }
 
@@ -516,6 +537,9 @@ fun addingPage(mainViewModel: MainViewModel,navController: NavHostController) {
     val maxDetailsInputLength = 250
     val mContext = LocalContext.current
     val maxNumberInput= 5
+
+
+    if(!camState.value.enableCameraPreview){
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -562,8 +586,12 @@ fun addingPage(mainViewModel: MainViewModel,navController: NavHostController) {
                 modifier = Modifier.padding(top = 20.dp),
                 value = location,
                 onValueChange = { newText ->
-                    if(newText.text.length <= maxLocationInputLength) location = newText
-                    else Toast.makeText(mContext, "Cannot be more than 100 Characters", Toast.LENGTH_SHORT).show()
+                    if (newText.text.length <= maxLocationInputLength) location = newText
+                    else Toast.makeText(
+                        mContext,
+                        "Cannot be more than 100 Characters",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 },
                 label = {
                     Text(text = "Location")
@@ -579,8 +607,12 @@ fun addingPage(mainViewModel: MainViewModel,navController: NavHostController) {
                 modifier = Modifier.padding(top = 20.dp),
                 value = details,
                 onValueChange = { newText ->
-                    if(newText.text.length <= maxDetailsInputLength) details = newText
-                    else Toast.makeText(mContext, "Cannot be more than 100 Characters", Toast.LENGTH_SHORT).show()
+                    if (newText.text.length <= maxDetailsInputLength) details = newText
+                    else Toast.makeText(
+                        mContext,
+                        "Cannot be more than 100 Characters",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 },
                 label = {
                     Text(text = "Details")
@@ -592,10 +624,14 @@ fun addingPage(mainViewModel: MainViewModel,navController: NavHostController) {
                 onValueChange = { newTextFieldValue ->
                     val newText = newTextFieldValue.text
 
-                    if(newText.isEmpty() || newText.toIntOrNull() in 0..maxNumberInput){
+                    if (newText.isEmpty() || newText.toIntOrNull() in 0..maxNumberInput) {
                         rating = newTextFieldValue
                     } else {
-                        Toast.makeText(mContext, "Please choose a number between 0 and 5", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            mContext,
+                            "Please choose a number between 0 and 5",
+                            Toast.LENGTH_SHORT
+                        ).show()
                         rating = rating.takeUnless { it.text.isEmpty() } ?: TextFieldValue("")
                     }
                 },
@@ -603,6 +639,16 @@ fun addingPage(mainViewModel: MainViewModel,navController: NavHostController) {
                     Text(text = "Rating in Number (0-5)")
                 },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+            )
+            TextField(
+                modifier = Modifier.padding(top = 20.dp),
+                value = capturedImageUri.toString(),
+                onValueChange = { newText ->
+                    capturedImageUri = newText
+                },
+                label = {
+                    Text(text = "Image")
+                }
             )
             Spacer(modifier = Modifier.size(100.dp))
             Button(
@@ -625,6 +671,22 @@ fun addingPage(mainViewModel: MainViewModel,navController: NavHostController) {
                 Text(text = "Save", fontSize = 20.sp)
             }
         }
+        Button(
+            modifier = Modifier.padding(25.dp),
+            onClick = { cameraViewModel.enableCameraPreview(true) }
+        ) {
+            Icon(Icons.Default.Add, "Open Camera Preview")
+        }
+    }
+    } else {
+        CameraView(
+            cameraViewModel = cameraViewModel,
+            previewView = previewView,
+            imageCapture = imageCapture,
+            cameraExecutor = cameraExecutor,
+            directory = directory,
+            onImageCaptured = handleImageCaptured
+        )
     }
 }
 
@@ -775,6 +837,46 @@ fun editTripModal(mainViewModel: MainViewModel){
 }
 
 
+@Composable
+fun CameraView(cameraViewModel: CameraViewModel, previewView: PreviewView, imageCapture: ImageCapture, cameraExecutor: ExecutorService, directory: File, onImageCaptured:(String)-> Unit){
 
+
+    Box(
+        contentAlignment = Alignment.BottomCenter,
+        modifier = Modifier.fillMaxSize()
+        ){
+        AndroidView({previewView}, modifier = Modifier.fillMaxSize())
+        Button(
+            modifier = Modifier.padding(25.dp),
+            onClick = {
+                val photoFile = File(
+                    directory,
+                    SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.GERMANY).format(System.currentTimeMillis())
+                )
+
+                imageCapture.takePicture(
+                    ImageCapture.OutputFileOptions.Builder(photoFile).build(),
+                    cameraExecutor,
+                    object : ImageCapture.OnImageSavedCallback{
+                        override fun onError(exception: ImageCaptureException){
+                            Log.e("PICTURE","Errer when capturing image")
+                        }
+
+                        override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                            val imageUri = photoFile.absolutePath
+                            onImageCaptured(imageUri)
+                            cameraViewModel.setNewUri(Uri.fromFile(photoFile))
+                            Log.d("PICTURE", "SAVED in ${Uri.fromFile(photoFile)}")
+                            Log.d("PICTURE", "SAVED in $photoFile")
+
+                        }
+                    }
+                )
+            }
+        ) {
+            Icon(Icons.Default.AddCircle, "Take Photo", tint = backgroundWhite)
+        }
+    }
+}
 
 
