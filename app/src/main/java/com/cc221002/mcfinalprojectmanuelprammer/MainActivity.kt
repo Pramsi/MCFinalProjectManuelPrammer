@@ -35,7 +35,7 @@ import java.util.concurrent.Executors
 
 class MainActivity : ComponentActivity() {
     private val db by lazy {
-        Room.databaseBuilder(this, TripsDatabase::class.java, "TripsDatabase.db").build()
+        Room.databaseBuilder(this, TripsDatabase::class.java, "TripsDatabase.db") .addMigrations(TripsDatabase.MIGRATION_1_2).build()
     }
 
     private val mainViewModel by viewModels<MainViewModel>(
