@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.View
 import android.view.ViewTreeObserver
 import android.widget.Toast
+import android.window.SplashScreen
 import androidx.annotation.RequiresApi
 import androidx.camera.camera2.internal.annotation.CameraExecutor
 import androidx.camera.core.ImageCapture
@@ -87,6 +88,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import coil.compose.ImagePainter.State.Empty.painter
+import coil.compose.rememberImagePainter
 import com.cc221002.mcfinalprojectmanuelprammer.R
 import com.cc221002.mcfinalprojectmanuelprammer.data.model.SingleTrip
 import com.cc221002.mcfinalprojectmanuelprammer.ui.CameraViewModel
@@ -132,7 +135,7 @@ fun MainView(mainViewModel: MainViewModel, cameraViewModel: CameraViewModel, pre
                 composable(Screen.First.route) {
                     mainViewModel.selectScreen(Screen.First)
                     mainViewModel.getTrips()
-                    showTrips(mainViewModel, navController)
+                    showTrips(mainViewModel, navController, cameraViewModel)
                 }
 
                 composable(Screen.Second.route) {
@@ -170,9 +173,10 @@ fun BottomNavigationBar(navController: NavHostController, selectedScreen: Screen
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun showTrips(mainViewModel: MainViewModel,navController: NavHostController) {
+fun showTrips(mainViewModel: MainViewModel,navController: NavHostController, cameraViewModel: CameraViewModel = CameraViewModel()) {
     val trips = mainViewModel.trips.collectAsState()
     val state = mainViewModel.mainViewState.collectAsState()
+    val camState = cameraViewModel.cameraState.collectAsState()
 
     if(!state.value.openTripDialog){
     LazyColumn(
@@ -212,103 +216,17 @@ fun showTrips(mainViewModel: MainViewModel,navController: NavHostController) {
                         modifier = Modifier
                             .padding(5.dp)
                     )
-
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        horizontalAlignment = Alignment.Start,
-                        verticalArrangement = Arrangement.Top
-                    ) {
-
-                        Text(
-                            text = "Trip to:",
-                            textAlign = TextAlign.Start,
-                            fontSize = 20.sp,
-                            style = TextStyle(fontFamily = FontFamily.Monospace),
-                            color = Color.Black,
-                            modifier = Modifier
-                                .padding(5.dp, 15.dp, 0.dp, 5.dp)
-                                .width(250.dp)
-                        )
-
-                        Text(
-                            text = trip.location,
-                            textAlign = TextAlign.Start,
-                            fontSize = 35.sp,
-                            fontWeight = FontWeight.Bold,
-                            style = TextStyle(fontFamily = FontFamily.Monospace),
-                            color = Color.Black,
-                            modifier = Modifier
-                                .padding(5.dp)
-                                .width(250.dp)
-                        )
-                        Text(
-                            text = trip.date,
-                        textAlign = TextAlign.Start,
-                        fontSize = 20.sp,
-                        style = TextStyle(fontFamily = FontFamily.Monospace),
-                        color = Color.Black,
-                        modifier = Modifier
-                            .padding(5.dp, 25.dp, 0.dp, 15.dp)
-                            .width(250.dp)
-                        )
-                    }
-                }
-        }
-        }
-    }
-    Box(modifier = Modifier
-        .fillMaxSize()){
-        Box(modifier = Modifier
-            .padding(50.dp)
-            .width(50.dp)
-            .height(50.dp)
-            .background(color = Color.Green)
-            .align(Alignment.BottomEnd)
-            .clickable { navController.navigate(Screen.Second.route) }
-    ){}
-    }
-    if (state.value.openTripDialog) {
-        showSingleTripModal(mainViewModel, navController)
-    }
-}
-
-@RequiresApi(Build.VERSION_CODES.O)
-@Composable
-fun showSingleTripModal(mainViewModel: MainViewModel, navController: NavHostController) {
-    val selectedTrip = mainViewModel.selectedTrip.collectAsState()
-
-    LazyColumn(
-        verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundGreen)
-    ) {
-        items(1) {    selectedTrip.value?.let { trip ->
-
             Row(
-                modifier = Modifier
-                    .padding(20.dp, 50.dp, 20.dp, 0.dp)
-                    .shadow(elevation = 5.dp, shape = RoundedCornerShape(20.dp), clip = true)
-                    .clip(shape = RoundedCornerShape(20.dp))
-                    .background(backgroundWhite)
-                    .border(1.dp, Color.Black, shape = RoundedCornerShape(20.dp))
-                    .background(backgroundWhite),
-                horizontalArrangement = Arrangement.Center
+                modifier = Modifier.fillMaxSize()
+                    .height(200.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Spacer(
-                    modifier = Modifier
-                        .padding(5.dp)
-                )
-
                 Column(
                     modifier = Modifier
-                        .fillMaxWidth(),
-                    horizontalAlignment = Alignment.Start,
-                    verticalArrangement = Arrangement.Top
+                        .height(250.dp)
+                        .fillParentMaxWidth(0.6F),
+                    verticalArrangement = Arrangement.SpaceBetween
                 ) {
-
                     Text(
                         text = "Trip to:",
                         textAlign = TextAlign.Start,
@@ -341,6 +259,131 @@ fun showSingleTripModal(mainViewModel: MainViewModel, navController: NavHostCont
                             .padding(5.dp, 25.dp, 0.dp, 15.dp)
                             .width(250.dp)
                     )
+                }
+                Column(
+                    modifier = Modifier
+                        .fillParentMaxHeight()
+                        .fillParentMaxWidth(0.4F)
+//                        .background(Color.Blue)
+                )
+                {
+                    Image(
+                        modifier = Modifier.fillParentMaxHeight().fillParentMaxWidth(0.4F),
+                        painter = rememberImagePainter(trip.imageUri),
+                        contentDescription = "null",
+                        contentScale = ContentScale.Fit
+                    )
+                    Log.d("view", "Should show picture ${trip.imageUri}")
+                    Log.d("photosListState","${camState.value.photosListState}")
+                }
+            }
+            }
+        }
+    }
+    }
+
+    Box(modifier = Modifier
+        .fillMaxSize()){
+        Box(modifier = Modifier
+            .padding(50.dp)
+            .width(50.dp)
+            .height(50.dp)
+            .background(color = Color.Green)
+            .align(Alignment.BottomEnd)
+            .clickable { navController.navigate(Screen.Second.route) }
+    ){}
+    }
+    if (state.value.openTripDialog) {
+        showSingleTripModal(mainViewModel, navController)
+    }
+}
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Composable
+fun showSingleTripModal(mainViewModel: MainViewModel, navController: NavHostController) {
+    val selectedTrip = mainViewModel.selectedTrip.collectAsState()
+
+    LazyColumn(
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .fillMaxSize()
+            .background(backgroundGreen)
+    ) {
+        items(1) {    selectedTrip.value?.let { trip ->
+            Row (
+                modifier = Modifier
+                    .padding(20.dp, 50.dp, 20.dp, 0.dp)
+                    .shadow(elevation = 5.dp, shape = RoundedCornerShape(20.dp), clip = true)
+                    .clip(shape = RoundedCornerShape(20.dp))
+                    .background(backgroundWhite)
+                    .border(1.dp, Color.Black, shape = RoundedCornerShape(20.dp))
+                    .background(backgroundWhite),
+                horizontalArrangement = Arrangement.Center
+            ){
+                Spacer(
+                    modifier = Modifier
+                        .padding(5.dp)
+                )
+                Row(
+                    modifier = Modifier.fillMaxSize()
+                        .height(200.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .height(250.dp)
+                            .fillParentMaxWidth(0.6F),
+                        verticalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = "Trip to:",
+                            textAlign = TextAlign.Start,
+                            fontSize = 20.sp,
+                            style = TextStyle(fontFamily = FontFamily.Monospace),
+                            color = Color.Black,
+                            modifier = Modifier
+                                .padding(5.dp, 15.dp, 0.dp, 5.dp)
+                                .width(250.dp)
+                        )
+
+                        Text(
+                            text = trip.location,
+                            textAlign = TextAlign.Start,
+                            fontSize = 35.sp,
+                            fontWeight = FontWeight.Bold,
+                            style = TextStyle(fontFamily = FontFamily.Monospace),
+                            color = Color.Black,
+                            modifier = Modifier
+                                .padding(5.dp)
+                                .width(250.dp)
+                        )
+                        Text(
+                            text = trip.date,
+                            textAlign = TextAlign.Start,
+                            fontSize = 20.sp,
+                            style = TextStyle(fontFamily = FontFamily.Monospace),
+                            color = Color.Black,
+                            modifier = Modifier
+                                .padding(5.dp, 25.dp, 0.dp, 15.dp)
+                                .width(250.dp)
+                        )
+                    }
+                    Column(
+                        modifier = Modifier
+                            .fillParentMaxHeight()
+                            .fillParentMaxWidth(0.4F)
+//                        .background(Color.Blue)
+                    )
+                    {
+                        Image(
+                            modifier = Modifier.fillParentMaxHeight().fillParentMaxWidth(0.4F),
+                            painter = rememberImagePainter(trip.imageUri),
+                            contentDescription = "null",
+                            contentScale = ContentScale.Fit
+                        )
+                        Log.d("view", "Should show picture ${trip.imageUri}")
+                    }
                 }
             }
             Row(
@@ -664,7 +707,8 @@ fun addingPage(mainViewModel: MainViewModel,navController: NavHostController, ca
                     .shadow(5.dp, RoundedCornerShape(5.dp))
                     .background(color = backgroundWhite)
                     .clip(RoundedCornerShape(5.dp, 5.dp, 0.dp, 0.dp))
-                    .clickable {cameraViewModel.enableCameraPreview(true)
+                    .clickable {
+                        cameraViewModel.enableCameraPreview(true)
                     },
                     contentAlignment = Alignment.Center
                 ){
@@ -869,7 +913,7 @@ fun CameraView(cameraViewModel: CameraViewModel, previewView: PreviewView, image
             onClick = {
                 val photoFile = File(
                     directory,
-                    SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.GERMANY).format(System.currentTimeMillis())
+                    SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.GERMANY).format(System.currentTimeMillis()) + ".jpg"
                 )
 
                 imageCapture.takePicture(
@@ -877,16 +921,16 @@ fun CameraView(cameraViewModel: CameraViewModel, previewView: PreviewView, image
                     cameraExecutor,
                     object : ImageCapture.OnImageSavedCallback{
                         override fun onError(exception: ImageCaptureException){
-                            Log.e("PICTURE","Errer when capturing image")
+                            Log.e("PICTURE","Error when capturing image")
                         }
 
                         override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                            val imageUri = photoFile.absolutePath
+                            val imageUri = "file://${photoFile.absolutePath}"
                             onImageCaptured(imageUri)
                             cameraViewModel.setNewUri(Uri.fromFile(photoFile))
                             Log.d("PICTURE", "SAVED in ${Uri.fromFile(photoFile)}")
                             Log.d("PICTURE", "SAVED in $photoFile")
-
+                            Log.d("PICTURE", "SAVED in $imageUri")
                         }
                     }
                 )
