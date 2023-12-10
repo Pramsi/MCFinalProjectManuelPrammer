@@ -80,7 +80,9 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -214,7 +216,7 @@ fun showTrips(mainViewModel: MainViewModel,navController: NavHostController, cam
             ){
                     Spacer(
                         modifier = Modifier
-                            .padding(5.dp)
+                            .padding(2.dp)
                     )
             Row(
                 modifier = Modifier.fillMaxSize()
@@ -223,7 +225,7 @@ fun showTrips(mainViewModel: MainViewModel,navController: NavHostController, cam
             ) {
                 Column(
                     modifier = Modifier
-                        .height(250.dp)
+                        .height(200.dp)
                         .fillParentMaxWidth(0.6F),
                     verticalArrangement = Arrangement.SpaceBetween
                 ) {
@@ -235,19 +237,21 @@ fun showTrips(mainViewModel: MainViewModel,navController: NavHostController, cam
                         color = Color.Black,
                         modifier = Modifier
                             .padding(5.dp, 15.dp, 0.dp, 5.dp)
-                            .width(250.dp)
                     )
 
                     Text(
                         text = trip.location,
                         textAlign = TextAlign.Start,
-                        fontSize = 35.sp,
+                        fontSize = 30.sp,
                         fontWeight = FontWeight.Bold,
-                        style = TextStyle(fontFamily = FontFamily.Monospace),
+                        style = TextStyle(fontFamily = FontFamily.Monospace).copy(lineBreak = LineBreak.Paragraph),
                         color = Color.Black,
+                        maxLines = 2,
+                        softWrap = true,
+                        overflow = TextOverflow.Ellipsis,
                         modifier = Modifier
                             .padding(5.dp)
-                            .width(250.dp)
+                            .fillParentMaxWidth(0.55F),
                     )
                     Text(
                         text = trip.date,
@@ -323,7 +327,7 @@ fun showSingleTripModal(mainViewModel: MainViewModel, navController: NavHostCont
             ){
                 Spacer(
                     modifier = Modifier
-                        .padding(5.dp)
+                        .padding(2.dp)
                 )
                 Row(
                     modifier = Modifier.fillMaxSize()
@@ -344,19 +348,21 @@ fun showSingleTripModal(mainViewModel: MainViewModel, navController: NavHostCont
                             color = Color.Black,
                             modifier = Modifier
                                 .padding(5.dp, 15.dp, 0.dp, 5.dp)
-                                .width(250.dp)
                         )
 
                         Text(
                             text = trip.location,
                             textAlign = TextAlign.Start,
-                            fontSize = 35.sp,
+                            fontSize = 30.sp,
                             fontWeight = FontWeight.Bold,
-                            style = TextStyle(fontFamily = FontFamily.Monospace),
+                            style = TextStyle(fontFamily = FontFamily.Monospace).copy(lineBreak = LineBreak.Paragraph),
                             color = Color.Black,
+                            maxLines = 2,
+                            softWrap = true,
+                            overflow = TextOverflow.Ellipsis,
                             modifier = Modifier
                                 .padding(5.dp)
-                                .width(250.dp)
+                                .fillParentMaxWidth(0.55F),
                         )
                         Text(
                             text = trip.date,
