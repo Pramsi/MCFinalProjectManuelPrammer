@@ -198,14 +198,57 @@ fun showTrips(mainViewModel: MainViewModel,navController: NavHostController, cam
             .background(backgroundGreen)
     ) {
         item {
-            Text(
-                text = "Manuel Prammer",
-                fontWeight = FontWeight.Bold,
-                fontSize = 50.sp,
-                style = TextStyle(fontFamily = FontFamily.SansSerif),
-                color = Color.Black
-
+            Box(
+                modifier = Modifier
+                    .padding(0.dp, 0.dp, 0.dp, 80.dp)
+                    .fillMaxSize(),
+                contentAlignment = Alignment.CenterStart
             )
+            {
+                Canvas(
+                modifier = Modifier
+                    .fillMaxSize()
+            ) {
+                translate(left = 0f, top = -450f) {
+                    drawCircle(backgroundWhite, radius = 300.dp.toPx())
+                    drawCircle(Black, radius = 298.dp.toPx(), style = Stroke(10f), alpha = 0.1f,)
+                    drawCircle(Black, radius = 299.dp.toPx(), style = Stroke(8f), alpha = 0.1f,)
+                    drawCircle(Black, radius = 299.dp.toPx(), style = Stroke(3f), alpha = 0.1f,)
+                    drawCircle(Black, radius = 300.dp.toPx(), style = Stroke(2f), alpha = 0.1f,)
+                    drawCircle(Black, radius = 300.dp.toPx(), style = Stroke(1f), alpha = 0.1f,)
+
+                }
+
+            }
+                Column {
+                    Text(
+                        text = "Manuel Prammer",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 40.sp,
+                        style = TextStyle(fontFamily = FontFamily.SansSerif),
+                        color = Color.Black,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(0.dp, 20.dp, 0.dp, 0.dp)
+
+                    )
+                    Text(
+                        text = "Trips: 4",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 40.sp,
+                        style = TextStyle(fontFamily = FontFamily.SansSerif),
+                        color = Color.Black,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(0.dp, 20.dp, 0.dp, 0.dp)
+
+                    )
+                }
+
+            }
+
         }
         items(trips.value) { trip ->
             Row (
@@ -298,17 +341,28 @@ fun showTrips(mainViewModel: MainViewModel,navController: NavHostController, cam
     }
     }
 
-    Box(modifier = Modifier
-        .fillMaxSize()){
-        Box(modifier = Modifier
-            .padding(50.dp)
-            .width(50.dp)
-            .height(50.dp)
-            .background(color = Color.Green)
-            .align(Alignment.BottomEnd)
-            .clickable { navController.navigate(Screen.Second.route) }
-    ){}
+    Box(
+        modifier = Modifier
+            .fillMaxSize(),
+        contentAlignment = Alignment.BottomEnd
+    ) {
+            Button(
+                onClick = { navController.navigate(Screen.Second.route) },
+                modifier = Modifier
+                    .padding(50.dp)
+                    .size(70.dp)
+                    .shadow(7.dp, CircleShape),
+                colors = ButtonDefaults.buttonColors(containerColor = backgroundWhite),
+                shape = CircleShape,
+                border = BorderStroke(1.dp, backgroundGreen),
+
+
+                ) {
+                Icon(imageVector = Icons.Default.Add, contentDescription = "Add Trip", tint = orange)
+            }
+
     }
+
     if (state.value.openTripDialog) {
         showSingleTripModal(mainViewModel, navController)
     }
@@ -319,9 +373,6 @@ fun showTrips(mainViewModel: MainViewModel,navController: NavHostController, cam
 fun showSingleTripModal(mainViewModel: MainViewModel, navController: NavHostController) {
     val selectedTrip = mainViewModel.selectedTrip.collectAsState()
 
-
-
-
     LazyColumn(
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -329,9 +380,6 @@ fun showSingleTripModal(mainViewModel: MainViewModel, navController: NavHostCont
             .fillMaxSize()
             .background(backgroundGreen)
     ) {
-
-
-
             items(1) {    selectedTrip.value?.let { trip ->
                 Canvas(
                     modifier = Modifier
@@ -344,9 +392,7 @@ fun showSingleTripModal(mainViewModel: MainViewModel, navController: NavHostCont
                         drawCircle(Black, radius = 299.dp.toPx(), style = Stroke(3f), alpha = 0.1f,)
                         drawCircle(Black, radius = 300.dp.toPx(), style = Stroke(2f), alpha = 0.1f,)
                         drawCircle(Black, radius = 300.dp.toPx(), style = Stroke(1f), alpha = 0.1f,)
-
                     }
-
                 }
 
                 Row (
