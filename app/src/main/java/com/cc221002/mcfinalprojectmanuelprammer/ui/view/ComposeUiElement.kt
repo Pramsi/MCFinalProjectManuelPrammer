@@ -69,13 +69,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Black
 import androidx.compose.ui.graphics.Color.Companion.Gray
 import androidx.compose.ui.graphics.Color.Companion.Magenta
 import androidx.compose.ui.graphics.Color.Companion.Transparent
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.draw
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.layout.ContentScale
@@ -330,10 +333,20 @@ fun showSingleTripModal(mainViewModel: MainViewModel, navController: NavHostCont
 
 
             items(1) {    selectedTrip.value?.let { trip ->
-                Canvas(modifier = Modifier.fillMaxSize()) {
+                Canvas(
+                    modifier = Modifier
+                        .fillMaxSize()
+                ) {
                     translate(left = 0f, top = -550f) {
                         drawCircle(backgroundWhite, radius = 300.dp.toPx())
+                        drawCircle(Black, radius = 298.dp.toPx(), style = Stroke(10f), alpha = 0.1f,)
+                        drawCircle(Black, radius = 299.dp.toPx(), style = Stroke(8f), alpha = 0.1f,)
+                        drawCircle(Black, radius = 299.dp.toPx(), style = Stroke(3f), alpha = 0.1f,)
+                        drawCircle(Black, radius = 300.dp.toPx(), style = Stroke(2f), alpha = 0.1f,)
+                        drawCircle(Black, radius = 300.dp.toPx(), style = Stroke(1f), alpha = 0.1f,)
+
                     }
+
                 }
 
                 Row (
@@ -524,13 +537,18 @@ fun showSingleTripModal(mainViewModel: MainViewModel, navController: NavHostCont
         ) {
             val size = 100f
             val trianglePath = Path().apply {
-                // Moves to top center position
                 moveTo(size / 2f, 0f)
-                // Add line to bottom right corner
-                lineTo(size, size)
-                // Add line to bottom left corner
-                lineTo(0f, size)
+                lineTo(size * 0.8f, size )
+                lineTo(size * 0.5f,size *0.8f)
+                lineTo(size * 0.2f, size )
             }
+            val triangleBorder= Path().apply {
+                moveTo(size / 2f, 0f)
+                lineTo(size * 0.8f, size )
+                lineTo(size * 0.5f,size *0.8f)
+                lineTo(size * 0.2f, size )
+                lineTo(size / 2f, 0f)
+        }
             Button(
                 onClick = { mainViewModel.dismissSingleTripModal() },
                 modifier = Modifier
@@ -543,10 +561,16 @@ fun showSingleTripModal(mainViewModel: MainViewModel, navController: NavHostCont
 
                 ) {
                 Canvas(modifier = Modifier.fillMaxSize()) {
-                        drawPath(
-                            color = orange,
-                            path = trianglePath
-                        )
+                      translate(left = -47f,-10f) {
+                          drawPath(
+                              color = orange,
+                              path = trianglePath
+                          )
+                          drawPath(color = Black,
+                              style = Stroke(2f),
+                              path = triangleBorder)
+                      }
+
                 }
             }
         }
