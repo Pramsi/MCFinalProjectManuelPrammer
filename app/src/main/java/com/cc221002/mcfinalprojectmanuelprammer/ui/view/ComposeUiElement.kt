@@ -13,6 +13,7 @@ import androidx.camera.camera2.internal.annotation.CameraExecutor
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.view.PreviewView
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -33,11 +34,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.BottomNavigation
+import androidx.compose.material.MaterialTheme.colors
+import androidx.compose.material.OutlinedButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddCircle
@@ -70,7 +74,9 @@ import androidx.compose.ui.graphics.Color.Companion.Gray
 import androidx.compose.ui.graphics.Color.Companion.Magenta
 import androidx.compose.ui.graphics.Color.Companion.Transparent
 import androidx.compose.ui.graphics.Color.Companion.White
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.drawscope.draw
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -219,7 +225,8 @@ fun showTrips(mainViewModel: MainViewModel,navController: NavHostController, cam
                             .padding(2.dp)
                     )
             Row(
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier
+                    .fillMaxSize()
                     .height(200.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -272,7 +279,9 @@ fun showTrips(mainViewModel: MainViewModel,navController: NavHostController, cam
                 )
                 {
                     Image(
-                        modifier = Modifier.fillParentMaxHeight().fillParentMaxWidth(0.4F),
+                        modifier = Modifier
+                            .fillParentMaxHeight()
+                            .fillParentMaxWidth(0.4F),
                         painter = rememberImagePainter(trip.imageUri),
                         contentDescription = "null",
                         contentScale = ContentScale.Fit
@@ -307,6 +316,9 @@ fun showTrips(mainViewModel: MainViewModel,navController: NavHostController, cam
 fun showSingleTripModal(mainViewModel: MainViewModel, navController: NavHostController) {
     val selectedTrip = mainViewModel.selectedTrip.collectAsState()
 
+
+
+
     LazyColumn(
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -314,153 +326,186 @@ fun showSingleTripModal(mainViewModel: MainViewModel, navController: NavHostCont
             .fillMaxSize()
             .background(backgroundGreen)
     ) {
-        items(1) {    selectedTrip.value?.let { trip ->
-            Row (
-                modifier = Modifier
-                    .padding(20.dp, 50.dp, 20.dp, 0.dp)
-                    .shadow(elevation = 5.dp, shape = RoundedCornerShape(20.dp), clip = true)
-                    .clip(shape = RoundedCornerShape(20.dp))
-                    .background(backgroundWhite)
-                    .border(1.dp, Color.Black, shape = RoundedCornerShape(20.dp))
-                    .background(backgroundWhite),
-                horizontalArrangement = Arrangement.Center
-            ){
-                Spacer(
+
+
+
+            items(1) {    selectedTrip.value?.let { trip ->
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                    translate(left = 0f, top = -550f) {
+                        drawCircle(backgroundWhite, radius = 300.dp.toPx())
+                    }
+                }
+
+                Row (
                     modifier = Modifier
-                        .padding(2.dp)
-                )
-                Row(
-                    modifier = Modifier.fillMaxSize()
-                        .height(200.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Column(
+                        .padding(20.dp, 100.dp, 20.dp, 0.dp)
+                        .shadow(elevation = 5.dp, shape = RoundedCornerShape(20.dp), clip = true)
+                        .clip(shape = RoundedCornerShape(20.dp))
+                        .background(backgroundWhite)
+                        .border(1.dp, Color.Black, shape = RoundedCornerShape(20.dp))
+                        .background(backgroundWhite),
+                    horizontalArrangement = Arrangement.Center
+                ){
+                    Spacer(
                         modifier = Modifier
-                            .height(250.dp)
-                            .fillParentMaxWidth(0.6F),
-                        verticalArrangement = Arrangement.SpaceBetween
+                            .padding(2.dp)
+                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .height(200.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(
-                            text = "Trip to:",
-                            textAlign = TextAlign.Start,
-                            fontSize = 20.sp,
-                            style = TextStyle(fontFamily = FontFamily.Monospace),
-                            color = Color.Black,
+                        Column(
                             modifier = Modifier
-                                .padding(5.dp, 15.dp, 0.dp, 5.dp)
-                        )
+                                .height(250.dp)
+                                .fillParentMaxWidth(0.6F),
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                text = "Trip to:",
+                                textAlign = TextAlign.Start,
+                                fontSize = 35.sp,
+                                fontWeight = FontWeight.Bold,
+                                style = TextStyle(fontFamily = FontFamily.Monospace),
+                                color = Color.Black,
+                                modifier = Modifier
+                                    .padding(5.dp, 15.dp, 0.dp, 5.dp)
+                            )
 
-                        Text(
-                            text = trip.location,
-                            textAlign = TextAlign.Start,
-                            fontSize = 30.sp,
-                            fontWeight = FontWeight.Bold,
-                            style = TextStyle(fontFamily = FontFamily.Monospace).copy(lineBreak = LineBreak.Paragraph),
-                            color = Color.Black,
-                            maxLines = 2,
-                            softWrap = true,
-                            overflow = TextOverflow.Ellipsis,
+                            Text(
+                                text = trip.date,
+                                textAlign = TextAlign.Start,
+                                fontSize = 20.sp,
+                                style = TextStyle(fontFamily = FontFamily.Monospace),
+                                color = Color.Black,
+                                modifier = Modifier
+                                    .padding(5.dp, 25.dp, 0.dp, 15.dp)
+                                    .width(250.dp)
+                            )
+                        }
+                        Column(
                             modifier = Modifier
-                                .padding(5.dp)
-                                .fillParentMaxWidth(0.55F),
+                                .fillParentMaxHeight()
+                                .fillParentMaxWidth(0.4F)
+//                        .background(Color.Blue)
                         )
-                        Text(
-                            text = trip.date,
-                            textAlign = TextAlign.Start,
-                            fontSize = 20.sp,
-                            style = TextStyle(fontFamily = FontFamily.Monospace),
-                            color = Color.Black,
-                            modifier = Modifier
-                                .padding(5.dp, 25.dp, 0.dp, 15.dp)
-                                .width(250.dp)
-                        )
+                        {
+                            Image(
+                                modifier = Modifier
+                                    .fillParentMaxHeight()
+                                    .fillParentMaxWidth(0.4F),
+                                painter = rememberImagePainter(trip.imageUri),
+                                contentDescription = "null",
+                                contentScale = ContentScale.Fit
+                            )
+                            Log.d("view", "Should show picture ${trip.imageUri}")
+                        }
                     }
+                }
+                Row(
+                    modifier = Modifier
+                        .height(450.dp)
+                        .padding(20.dp, 0.dp)
+                        .shadow(elevation = 5.dp, shape = RoundedCornerShape(20.dp), clip = true)
+                        .clip(shape = RoundedCornerShape(20.dp))
+                        .background(backgroundWhite)
+                        .border(1.dp, Color.Black, shape = RoundedCornerShape(20.dp))
+                        .background(backgroundWhite),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+
                     Column(
                         modifier = Modifier
-                            .fillParentMaxHeight()
-                            .fillParentMaxWidth(0.4F)
-//                        .background(Color.Blue)
-                    )
-                    {
-                        Image(
-                            modifier = Modifier.fillParentMaxHeight().fillParentMaxWidth(0.4F),
-                            painter = rememberImagePainter(trip.imageUri),
-                            contentDescription = "null",
-                            contentScale = ContentScale.Fit
-                        )
-                        Log.d("view", "Should show picture ${trip.imageUri}")
-                    }
-                }
-            }
-            Row(
-                modifier = Modifier
-                    .height(500.dp)
-                    .padding(20.dp, 0.dp)
-                    .shadow(elevation = 5.dp, shape = RoundedCornerShape(20.dp), clip = true)
-                    .clip(shape = RoundedCornerShape(20.dp))
-                    .background(backgroundWhite)
-                    .border(1.dp, Color.Black, shape = RoundedCornerShape(20.dp))
-                    .background(backgroundWhite),
-                horizontalArrangement = Arrangement.Center
-            ) {
-
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxHeight(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Top
-                ) {
-                    Text(
-                        text = "${trip.details}",
-                        textAlign = TextAlign.Start,
-                        fontSize = 20.sp,
-                        style = TextStyle(fontFamily = FontFamily.Monospace),
-                        color = Color.Black,
-                        modifier = Modifier
-                            .padding(25.dp, 15.dp, 25.dp, 15.dp)
                             .fillMaxWidth()
-                    )
-
-                    RatingStarsWithText(trip.rating)
-
-
-
-                    Row (
-                        modifier = Modifier
-                            .fillMaxSize(),
-                        verticalAlignment = Alignment.Bottom,
-                        horizontalArrangement = Arrangement.Center
-
-
-                    ){
-                        Button(onClick = {
-                            mainViewModel.deleteTrip(trip)
-                            },
-                            shape = RectangleShape,
-                            colors = ButtonColors(Transparent, White, Magenta, Gray),
+                            .fillMaxHeight()
+                        ,
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Top
+                    ) {
+                        Column(
                             modifier = Modifier
-                                .background(adventureRed)
-                                .fillParentMaxWidth(0.5f)
+                                .fillMaxWidth()
+                                .height(400.dp)
+                                .padding(10.dp)
+                            , verticalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text(text = "Delete")
+
+                            Text(
+                                text = trip.location,
+                                textAlign = TextAlign.Start,
+                                fontSize = 30.sp,
+                                fontWeight = FontWeight.Bold,
+                                style = TextStyle(fontFamily = FontFamily.Monospace).copy(lineBreak = LineBreak.Paragraph),
+                                color = Color.Black,
+                                maxLines = 3,
+                                modifier = Modifier
+                                    .padding(0.dp, 15.dp, 0.dp, 15.dp)
+                                    .fillMaxWidth()
+
+                            )
+
+                            Text(
+                                text = trip.details,
+                                textAlign = TextAlign.Start,
+                                fontSize = 20.sp,
+                                style = TextStyle(fontFamily = FontFamily.Monospace),
+                                color = Color.Black,
+                                modifier = Modifier
+                                    .padding(5.dp, 15.dp, 25.dp, 15.dp)
+                                    .fillMaxWidth()
+                                    .height(150.dp)
+                                    .verticalScroll(rememberScrollState())
+                            )
+                            Spacer(
+                                modifier = Modifier
+                                    .padding(10.dp)
+                            )
+
+                            Row(
+                                modifier=Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                RatingStarsWithText(trip.rating)
+                            }
+
                         }
 
-                        Button(onClick = { mainViewModel.editTrip(trip)},
-                            shape = RectangleShape,
-                            colors = ButtonColors(Transparent, White, Magenta, Gray),
+                        Row (
                             modifier = Modifier
-                                .background(backgroundGreen)
-                                .fillParentMaxWidth(0.5f)
-                        ) {
-                            Text(text = "Edit")
+                                .fillMaxSize(),
+                            verticalAlignment = Alignment.Bottom,
+                            horizontalArrangement = Arrangement.Center
+
+                        ){
+                            Button(onClick = {
+                                mainViewModel.deleteTrip(trip)
+                            },
+                                shape = RectangleShape,
+                                colors = ButtonColors(Transparent, White, Magenta, Gray),
+                                modifier = Modifier
+                                    .background(adventureRed)
+                                    .fillParentMaxWidth(0.5f)
+                            ) {
+                                Text(text = "Delete")
+                            }
+
+                            Button(onClick = { mainViewModel.editTrip(trip)},
+                                shape = RectangleShape,
+                                colors = ButtonColors(Transparent, White, Magenta, Gray),
+                                modifier = Modifier
+                                    .background(backgroundGreen)
+                                    .fillParentMaxWidth(0.5f)
+                            ) {
+                                Text(text = "Edit")
+                            }
                         }
                     }
                 }
             }
+            }
         }
-        }
-    }
+
     Column {
         editTripModal(mainViewModel)
     }
@@ -470,13 +515,41 @@ fun showSingleTripModal(mainViewModel: MainViewModel, navController: NavHostCont
             .fillMaxSize()
     ) {
         Box(modifier = Modifier
-            .padding(50.dp)
+            .padding(25.dp)
             .width(50.dp)
             .height(50.dp)
-            .background(color = Color.Green)
             .align(Alignment.BottomCenter)
             .clickable { mainViewModel.dismissSingleTripModal() }
-        ) {}
+
+        ) {
+            val size = 100f
+            val trianglePath = Path().apply {
+                // Moves to top center position
+                moveTo(size / 2f, 0f)
+                // Add line to bottom right corner
+                lineTo(size, size)
+                // Add line to bottom left corner
+                lineTo(0f, size)
+            }
+            Button(
+                onClick = { mainViewModel.dismissSingleTripModal() },
+                modifier = Modifier
+                    .size(50.dp)
+                    .shadow(7.dp, CircleShape),
+                colors = ButtonDefaults.buttonColors(containerColor = backgroundWhite),
+                shape = CircleShape,
+                border = BorderStroke(1.dp, backgroundGreen),
+
+
+                ) {
+                Canvas(modifier = Modifier.fillMaxSize()) {
+                        drawPath(
+                            color = orange,
+                            path = trianglePath
+                        )
+                }
+            }
+        }
     }
 }
     @Composable
@@ -582,7 +655,7 @@ fun addingPage(mainViewModel: MainViewModel,navController: NavHostController, ca
 
     var selectedDate by rememberSaveable { mutableStateOf(LocalDate.now()) }
 
-    val maxLocationInputLength = 50
+    val maxLocationInputLength = 40
     val maxDetailsInputLength = 250
     val mContext = LocalContext.current
     val maxNumberInput= 5
