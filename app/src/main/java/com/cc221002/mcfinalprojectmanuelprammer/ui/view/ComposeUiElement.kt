@@ -1050,7 +1050,7 @@ fun editTripModal(mainViewModel: MainViewModel){
 
 @Composable
 fun CameraView(cameraViewModel: CameraViewModel, previewView: PreviewView, imageCapture: ImageCapture, cameraExecutor: ExecutorService, directory: File, onImageCaptured:(String)-> Unit){
-
+    val camState = cameraViewModel.cameraState.collectAsState()
 
     Box(
         contentAlignment = Alignment.BottomCenter,
@@ -1086,6 +1086,9 @@ fun CameraView(cameraViewModel: CameraViewModel, previewView: PreviewView, image
             }
         ) {
             Icon(Icons.Default.AddCircle, "Take Photo", tint = backgroundWhite)
+        }
+        Button(onClick = { cameraViewModel.enableCameraPreview(false)}) {
+            Text(text = "back")
         }
     }
 }

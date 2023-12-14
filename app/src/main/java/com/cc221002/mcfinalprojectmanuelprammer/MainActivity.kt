@@ -89,8 +89,9 @@ class MainActivity : ComponentActivity() {
         preview.setSurfaceProvider(previewView.surfaceProvider)
     }
 
-
-
+// maybe the MainView is too fast, because i send everything there right at the beginning
+    //handle that i have the result of the Future ->cameraProviderFuture.addListener(
+// fast workaround --> put it on a separate view and not nested into Adding page
 
 
     @RequiresApi(Build.VERSION_CODES.O)
