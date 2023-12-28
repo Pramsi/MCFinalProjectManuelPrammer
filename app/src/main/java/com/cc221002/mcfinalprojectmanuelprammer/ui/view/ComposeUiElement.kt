@@ -38,6 +38,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -266,14 +267,18 @@ fun showTrips(mainViewModel: MainViewModel,navController: NavHostController, cam
 
         }
 
-        items(trips.value) { trip ->
+        items(trips.value)
+        {   trip ->
             val currentTrip by rememberUpdatedState(trip)
             val dismissState = rememberDismissState(
                 confirmStateChange = {
                     when(it) {
                         DismissValue.DismissedToStart -> {
                             mainViewModel.deleteTrip(currentTrip)
-                            false
+                            Log.d("SWIPE", "$currentTrip")
+                            Log.d("SWIPE", "${currentTrip.id}")
+
+                            true
                         }
 
                         else -> {
@@ -290,12 +295,12 @@ fun showTrips(mainViewModel: MainViewModel,navController: NavHostController, cam
                     .animateItemPlacement(),
                 dismissThresholds = {direction ->
                     FractionalThreshold(
-                        if(direction == androidx.compose.material.DismissDirection.StartToEnd) 0.66f else 0.50f
+                        if(direction == DismissDirection.EndToStart) 0.5f else 0.0f
                     )
                 },
                 background = {
                     SwipeBackground(dismissState = dismissState)
-                }
+                },
             )
             {
             Row (
@@ -425,7 +430,7 @@ fun SwipeBackground(dismissState: DismissState) {
     val color by animateColorAsState(
         when (dismissState.targetValue) {
             DismissValue.Default -> Color.LightGray
-            DismissValue.DismissedToEnd -> Color.Green
+            DismissValue.DismissedToEnd -> Color.Transparent
             DismissValue.DismissedToStart -> Color.Red
         }, label = "swipeanimate"
     )
