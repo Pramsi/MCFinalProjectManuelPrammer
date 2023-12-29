@@ -141,6 +141,7 @@ import java.util.concurrent.ExecutorService
 sealed class Screen(val route: String) {
     object SplashScreen: Screen("splashScreen")
     object ShowAllTrips: Screen("showTrips")
+    object ShowSingleTrip: Screen("showSingleTrip")
     object AddingPage: Screen("addingPage")
     object CameraView: Screen("cameraView")
 }
@@ -149,7 +150,6 @@ sealed class Screen(val route: String) {
 @Composable
 fun MainView(mainViewModel: MainViewModel, cameraViewModel: CameraViewModel, previewView: PreviewView, imageCapture: ImageCapture, cameraExecutor: ExecutorService, directory: File) {
     val navController = rememberNavController()
-
         Scaffold(
         ) {
             NavHost(
@@ -165,6 +165,11 @@ fun MainView(mainViewModel: MainViewModel, cameraViewModel: CameraViewModel, pre
                     mainViewModel.selectScreen(Screen.ShowAllTrips)
                     mainViewModel.getTrips()
                     showTrips(mainViewModel, navController, cameraViewModel)
+                }
+
+                composable(Screen.ShowSingleTrip.route) {
+                    mainViewModel.selectScreen(Screen.ShowSingleTrip)
+                    showSingleTripModal(mainViewModel, navController)
                 }
 
                 composable(Screen.AddingPage.route) {
@@ -190,7 +195,7 @@ fun showTrips(mainViewModel: MainViewModel,navController: NavHostController, cam
     val state = mainViewModel.mainViewState.collectAsState()
     val camState = cameraViewModel.cameraState.collectAsState()
 
-    if(!state.value.openTripDialog){
+//    if(!state.value.openTripDialog){
     LazyColumn(
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -259,7 +264,7 @@ fun showTrips(mainViewModel: MainViewModel,navController: NavHostController, cam
                 confirmStateChange = {
                     when(it) {
                         DismissValue.DismissedToStart -> {
-                            mainViewModel.deleteTrip(currentTrip)
+                            mainViewModel.deleteTrip(currentTrip,navController)
                             Log.d("SWIPE", "$currentTrip")
                             Log.d("SWIPE", "${currentTrip.id}")
 
@@ -298,8 +303,7 @@ fun showTrips(mainViewModel: MainViewModel,navController: NavHostController, cam
                     .background(backgroundWhite)
                     .clickable {
                         mainViewModel.showTripWithID(trip.id)
-                        Log.d("Show Trips with ID", " Clicked")
-                        Log.d("Show Trips with ID", "$trip")
+                        navController.navigate(Screen.ShowSingleTrip.route)
                     },
                 horizontalArrangement = Arrangement.Center
             ){
@@ -358,7 +362,6 @@ fun showTrips(mainViewModel: MainViewModel,navController: NavHostController, cam
                         modifier = Modifier
                             .fillParentMaxHeight()
                             .fillParentMaxWidth(0.4F)
-//                        .background(Color.Blue)
                     )
                     {
                         Image(
@@ -369,15 +372,13 @@ fun showTrips(mainViewModel: MainViewModel,navController: NavHostController, cam
                             contentDescription = "null",
                             contentScale = ContentScale.Fit
                         )
-                        Log.d("view", "Should show picture ${trip.imageUri}")
-                        Log.d("photosListState","${camState.value.photosListState}")
                     }
                 }
             }
             }
 
         }
-    }
+//    }
     }
 
     Box(
@@ -394,17 +395,15 @@ fun showTrips(mainViewModel: MainViewModel,navController: NavHostController, cam
                 colors = ButtonDefaults.buttonColors(containerColor = backgroundWhite),
                 shape = CircleShape,
                 border = BorderStroke(1.dp, backgroundGreen),
-
-
                 ) {
                 Icon(imageVector = Icons.Default.Add, contentDescription = "Add Trip", tint = orange)
             }
 
     }
 
-    if (state.value.openTripDialog) {
-        showSingleTripModal(mainViewModel, navController)
-    }
+//    if (state.value.openTripDialog) {
+//        showSingleTripModal(mainViewModel, navController)
+//    }
 }
 
 @Composable
@@ -524,7 +523,6 @@ fun showSingleTripModal(mainViewModel: MainViewModel, navController: NavHostCont
                             modifier = Modifier
                                 .fillParentMaxHeight()
                                 .fillParentMaxWidth(0.4F)
-//                        .background(Color.Blue)
                         )
                         {
                             Image(
@@ -535,7 +533,6 @@ fun showSingleTripModal(mainViewModel: MainViewModel, navController: NavHostCont
                                 contentDescription = "null",
                                 contentScale = ContentScale.Fit
                             )
-                            Log.d("view", "Should show picture ${trip.imageUri}")
                         }
                     }
                 }
@@ -615,7 +612,7 @@ fun showSingleTripModal(mainViewModel: MainViewModel, navController: NavHostCont
 
                         ){
                             Button(onClick = {
-                                mainViewModel.deleteTrip(trip)
+                                mainViewModel.deleteTrip(trip,navController)
                             },
                                 shape = RectangleShape,
                                 colors = ButtonColors(Transparent, White, Magenta, Gray),
@@ -655,8 +652,6 @@ fun showSingleTripModal(mainViewModel: MainViewModel, navController: NavHostCont
             .width(50.dp)
             .height(50.dp)
             .align(Alignment.BottomCenter)
-            .clickable { mainViewModel.dismissSingleTripModal() }
-
         ) {
             val size = 100f
             val trianglePath = Path().apply {
@@ -673,7 +668,7 @@ fun showSingleTripModal(mainViewModel: MainViewModel, navController: NavHostCont
                 lineTo(size / 2f, 0f)
         }
             Button(
-                onClick = { mainViewModel.dismissSingleTripModal() },
+                onClick = { navController.navigate(Screen.ShowAllTrips.route) },
                 modifier = Modifier
                     .size(50.dp)
                     .shadow(7.dp, CircleShape),

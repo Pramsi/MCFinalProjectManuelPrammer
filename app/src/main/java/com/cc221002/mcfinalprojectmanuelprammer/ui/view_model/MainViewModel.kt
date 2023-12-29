@@ -1,7 +1,9 @@
 package com.cc221002.mcfinalprojectmanuelprammer.ui.view_model
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavHostController
 import com.cc221002.mcfinalprojectmanuelprammer.data.TripsDao
 import com.cc221002.mcfinalprojectmanuelprammer.data.model.SingleTrip
 import com.cc221002.mcfinalprojectmanuelprammer.ui.view.Screen
@@ -76,26 +78,17 @@ class MainViewModel (private val dao: TripsDao): ViewModel(){
         viewModelScope.launch {
             dao.getTripWithID(id).collect { trip ->
                 _selectedTrip.value = trip.firstOrNull() // To get the single trip
-                _mainViewState.update { it.copy(openTripDialog = true) }
             }
         }
     }
 
 
-
-    fun dismissSingleTripModal(){
-        viewModelScope.launch {
-            _mainViewState.update { it.copy(openTripDialog = false) }
-            _selectedTrip.value = null
-            getTrips()
-        }
-    }
-
-
-    fun deleteTrip(singleTrip: SingleTrip) {
+    fun deleteTrip(singleTrip: SingleTrip, navHostController: NavHostController) {
         viewModelScope.launch {
             dao.deleteTrip(singleTrip)
-//            _mainViewState.update { it.copy(openTripDialog = false) }
+            Log.d("Delete","Normal Delete $singleTrip")
+            getTrips()
+            navHostController.navigate(Screen.ShowAllTrips.route)
         }
     }
 
