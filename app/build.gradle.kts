@@ -84,6 +84,7 @@ dependencies {
 
     // CameraX core library using the camera2 implementation
     val camerax_version = "1.4.0-alpha02"
+    implementation("androidx.camera:camera-core:${camerax_version}")
     implementation("androidx.camera:camera-camera2:${camerax_version}")
     implementation("androidx.camera:camera-lifecycle:${camerax_version}")
     implementation("androidx.camera:camera-view:${camerax_version}")

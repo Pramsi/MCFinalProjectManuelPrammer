@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -62,6 +63,7 @@ class MainActivity : ComponentActivity() {
     private val preview: Preview = Preview.Builder().build()
 
     private fun setupCamera(){
+        Log.d("Setup", "This is the setup of the camera")
         previewView = PreviewView(this)
 
         cameraProviderFuture = ProcessCameraProvider.getInstance(this)
@@ -99,7 +101,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         requestPermission()
-        setupCamera()
+
 //        mainViewModel.wipeDatabase()
 //        mainViewModel.insertPreTrips()
         setContent {
@@ -109,6 +111,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
+                    setupCamera()
                     MainView(mainViewModel, cameraViewModel, previewView, imageCapture, cameraExecutor, getOutputDirectory())
                 }
             }
