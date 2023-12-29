@@ -133,69 +133,48 @@ import java.util.Locale
 import java.util.concurrent.ExecutorService
 
 sealed class Screen(val route: String) {
-    object First: Screen("first")
-    object Second: Screen("second")
+    object SplashScreen: Screen("splashScreen")
+    object ShowAllTrips: Screen("showTrips")
+    object AddingPage: Screen("addingPage")
+    object CameraView: Screen("cameraView")
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun MainView(mainViewModel: MainViewModel, cameraViewModel: CameraViewModel, previewView: PreviewView, imageCapture: ImageCapture, cameraExecutor: ExecutorService, directory: File) {
-    val navController = rememberNavController()
-    val loadingFinished = remember { mutableStateOf(false) }
+    val navController = rememberNavController();
 
-
-    // Introduce a 2-second delay to simulate loading
-    LaunchedEffect(Unit) {
-        delay(2000)  // Delay for 2 seconds
-        loadingFinished.value = true
-    }
-    if (loadingFinished.value) {
         Scaffold(
-//            bottomBar = { BottomNavigationBar(navController, state.value.selectedScreen) }
         ) {
             NavHost(
                 navController = navController,
                 modifier = Modifier.padding(it),
-                startDestination = Screen.First.route
+                startDestination = Screen.SplashScreen.route
             ) {
-                composable(Screen.First.route) {
-                    mainViewModel.selectScreen(Screen.First)
+                composable(Screen.SplashScreen.route) {
+                    mainViewModel.selectScreen(Screen.SplashScreen)
+                    SplashScreen(navController)
+                }
+                composable(Screen.ShowAllTrips.route) {
+                    mainViewModel.selectScreen(Screen.ShowAllTrips)
                     mainViewModel.getTrips()
                     showTrips(mainViewModel, navController, cameraViewModel)
                 }
 
-                composable(Screen.Second.route) {
-                    mainViewModel.selectScreen(Screen.Second)
+                composable(Screen.AddingPage.route) {
+                    mainViewModel.selectScreen(Screen.AddingPage)
                     addingPage(mainViewModel,navController, cameraViewModel, previewView,imageCapture,cameraExecutor,directory, capturedImageUri = null)
+
+                }
+
+                composable(Screen.CameraView.route) {
+                    mainViewModel.selectScreen(Screen.CameraView)
+                    CameraView(navController, cameraViewModel, previewView,imageCapture,cameraExecutor,directory /*,capturedImageUri = null*/ )
 
                 }
             }
         }
     }
-    else {
-        SplashScreen()
-    }
-
-}
-
-@Composable
-fun BottomNavigationBar(navController: NavHostController, selectedScreen: Screen){
-    BottomNavigation(
-        backgroundColor = Color.Gray
-    ) {
-        NavigationBarItem(
-            selected = (selectedScreen == Screen.First),
-            onClick = { navController.navigate(Screen.First.route) },
-            icon = { Icon(imageVector = Icons.Default.Home, contentDescription ="" ) })
-
-        NavigationBarItem(
-            selected = (selectedScreen == Screen.Second),
-            onClick = { navController.navigate(Screen.Second.route) },
-            icon = { Icon(imageVector = Icons.Default.Add, contentDescription ="" ) })
-
-    }
-}
-
 
 @OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
 @RequiresApi(Build.VERSION_CODES.O)
@@ -401,7 +380,7 @@ fun showTrips(mainViewModel: MainViewModel,navController: NavHostController, cam
         contentAlignment = Alignment.BottomEnd
     ) {
             Button(
-                onClick = { navController.navigate(Screen.Second.route) },
+                onClick = { navController.navigate(Screen.AddingPage.route) },
                 modifier = Modifier
                     .padding(50.dp)
                     .size(70.dp)
@@ -715,7 +694,17 @@ fun showSingleTripModal(mainViewModel: MainViewModel, navController: NavHostCont
     }
 }
     @Composable
-    fun SplashScreen() {
+    fun SplashScreen(navController: NavHostController) {
+
+        val loadingFinished = remember { mutableStateOf(false) }
+
+
+        // Introduce a 2-second delay to simulate loading
+        LaunchedEffect(Unit) {
+            delay(2000)  // Delay for 2 seconds
+            loadingFinished.value = true
+        }
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -728,6 +717,9 @@ fun showSingleTripModal(mainViewModel: MainViewModel, navController: NavHostCont
                 modifier = Modifier
                     .fillMaxSize()
             )
+        }
+        if(loadingFinished.value) {
+            navController.navigate(Screen.ShowAllTrips.route)
         }
     }
 
@@ -949,7 +941,7 @@ fun addingPage(mainViewModel: MainViewModel,navController: NavHostController, ca
                     .background(color = backgroundWhite)
                     .clip(RoundedCornerShape(5.dp, 5.dp, 0.dp, 0.dp))
                     .clickable {
-                        cameraViewModel.enableCameraPreview(true)
+                        navController.navigate(Screen.CameraView.route)
                     },
                     contentAlignment = Alignment.Center
                 ){
@@ -968,7 +960,7 @@ fun addingPage(mainViewModel: MainViewModel,navController: NavHostController, ca
                             rating.text,
                             capturedImageUri,
                         )
-                    ); navController.navigate(Screen.First.route)
+                    ); navController.navigate(Screen.ShowAllTrips.route)
                 },
                 modifier = Modifier
                     .padding(top = 20.dp)
@@ -980,16 +972,17 @@ fun addingPage(mainViewModel: MainViewModel,navController: NavHostController, ca
             }
         }
     }
-    } else {
-        CameraView(
-            cameraViewModel = cameraViewModel,
-            previewView = previewView,
-            imageCapture = imageCapture,
-            cameraExecutor = cameraExecutor,
-            directory = directory,
-            onImageCaptured = handleImageCaptured
-        )
     }
+//    else {
+//        CameraView(
+//            cameraViewModel = cameraViewModel,
+//            previewView = previewView,
+//            imageCapture = imageCapture,
+//            cameraExecutor = cameraExecutor,
+//            directory = directory,
+//            onImageCaptured = handleImageCaptured
+//        )
+//    }
 }
 
 
@@ -1141,7 +1134,7 @@ fun editTripModal(mainViewModel: MainViewModel){
 
 
 @Composable
-fun CameraView(cameraViewModel: CameraViewModel, previewView: PreviewView, imageCapture: ImageCapture, cameraExecutor: ExecutorService, directory: File, onImageCaptured:(String)-> Unit){
+fun CameraView(navController: NavHostController,cameraViewModel: CameraViewModel, previewView: PreviewView, imageCapture: ImageCapture, cameraExecutor: ExecutorService, directory: File/*, onImageCaptured:(String)-> Unit*/){
     val camState = cameraViewModel.cameraState.collectAsState()
 
     Box(
@@ -1167,7 +1160,7 @@ fun CameraView(cameraViewModel: CameraViewModel, previewView: PreviewView, image
 
                         override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
                             val imageUri = "file://${photoFile.absolutePath}"
-                            onImageCaptured(imageUri)
+//                            onImageCaptured(imageUri)
                             cameraViewModel.setNewUri(Uri.fromFile(photoFile))
                             Log.d("PICTURE", "SAVED in ${Uri.fromFile(photoFile)}")
                             Log.d("PICTURE", "SAVED in $photoFile")
@@ -1179,7 +1172,7 @@ fun CameraView(cameraViewModel: CameraViewModel, previewView: PreviewView, image
         ) {
             Icon(Icons.Default.AddCircle, "Take Photo", tint = backgroundWhite)
         }
-        Button(onClick = { cameraViewModel.enableCameraPreview(false)}) {
+        Button(onClick = { navController.navigate(Screen.AddingPage.route)}) {
             Text(text = "back")
         }
     }

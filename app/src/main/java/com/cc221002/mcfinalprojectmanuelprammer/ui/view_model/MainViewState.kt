@@ -6,7 +6,7 @@ import com.cc221002.mcfinalprojectmanuelprammer.ui.view.Screen
 data class MainViewState(
     val trips: List<SingleTrip> = emptyList(),
     val editSingleTrip: SingleTrip = SingleTrip("","","","",""),
-    val selectedScreen: Screen = Screen.First,
+    val selectedScreen: Screen = Screen.SplashScreen,
     val openTripDialog: Boolean = false,
     val openEditDialog: Boolean = false,
 
