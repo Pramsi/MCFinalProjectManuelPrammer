@@ -24,6 +24,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -42,6 +43,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
@@ -96,8 +98,12 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.draw
 import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.LocalTextInputService
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -142,7 +148,7 @@ sealed class Screen(val route: String) {
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun MainView(mainViewModel: MainViewModel, cameraViewModel: CameraViewModel, previewView: PreviewView, imageCapture: ImageCapture, cameraExecutor: ExecutorService, directory: File) {
-    val navController = rememberNavController();
+    val navController = rememberNavController()
 
         Scaffold(
         ) {
@@ -813,9 +819,12 @@ fun addingPage(mainViewModel: MainViewModel,navController: NavHostController, ca
     val maxDetailsInputLength = 250
     val mContext = LocalContext.current
     val maxNumberInput= 5
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
 
 
     if(!camState.value.enableCameraPreview){
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -824,36 +833,52 @@ fun addingPage(mainViewModel: MainViewModel,navController: NavHostController, ca
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp)
-//                .clip(RoundedCornerShape(100))
-//                .background(backgroundWhite)
-//            .shadow(5.dp, RoundedCornerShape(100))
-            , contentAlignment = Alignment.Center
-        ) {
-            Canvas(modifier = Modifier.fillMaxSize()) {
-                translate(left = 0f, top = -125f) {
-                    drawCircle(backgroundWhite, radius = 225.dp.toPx())
+            Box(
+                modifier = Modifier
+                    .padding(0.dp, 0.dp, 0.dp, 80.dp)
+                    .fillMaxSize(),
+                contentAlignment = Alignment.CenterStart
+            )
+            {
+                Canvas(
+                    modifier = Modifier
+                        .fillMaxSize()
+                ) {
+                    translate(left = 0f, top = -390f) {
+                        drawCircle(backgroundWhite, radius = 300.dp.toPx())
+                        drawCircle(Black, radius = 298.dp.toPx(), style = Stroke(10f), alpha = 0.1f,)
+                        drawCircle(Black, radius = 299.dp.toPx(), style = Stroke(8f), alpha = 0.1f,)
+                        drawCircle(Black, radius = 299.dp.toPx(), style = Stroke(3f), alpha = 0.1f,)
+                        drawCircle(Black, radius = 300.dp.toPx(), style = Stroke(2f), alpha = 0.1f,)
+                        drawCircle(Black, radius = 300.dp.toPx(), style = Stroke(1f), alpha = 0.1f,)
+
+                    }
+
+                }
+                Column {
+                    Text(
+                        text = "Add new Trip",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 40.sp,
+                        style = TextStyle(fontFamily = FontFamily.SansSerif),
+                        color = Color.Black,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(0.dp, 40.dp, 0.dp, 0.dp)
+                    )
                 }
             }
-            Text(
-                text = "ADD NEW TRIP",
-                fontWeight = FontWeight.Bold,
-                fontSize = 50.sp,
-                style = TextStyle(fontFamily = FontFamily.SansSerif),
-                color = Color.Black
-            )
-        }
-
-        Spacer(modifier = Modifier.size(100.dp))
+        Spacer(modifier = Modifier.size(50.dp))
 
         Column(
             modifier = Modifier
                 .fillMaxSize()
-//                .verticalScroll(rememberScrollState())
-//                .background(backgroundGreen),
+                .pointerInput(Unit){
+                                   detectTapGestures (
+                                       onTap = {focusManager.clearFocus()}
+                                   )
+                                   }
             , verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -871,7 +896,7 @@ fun addingPage(mainViewModel: MainViewModel,navController: NavHostController, ca
                 },
                 label = {
                     Text(text = "Location")
-                }
+                },
             )
             Spacer(modifier = Modifier.padding(top = 20.dp))
             DatePickerField(
@@ -883,7 +908,9 @@ fun addingPage(mainViewModel: MainViewModel,navController: NavHostController, ca
                 modifier = Modifier.padding(top = 20.dp),
                 value = details,
                 onValueChange = { newText ->
-                    if (newText.text.length <= maxDetailsInputLength) details = newText
+                    if (newText.text.length <= maxDetailsInputLength) {
+                        details = newText
+                    }
                     else Toast.makeText(
                         mContext,
                         "Cannot be more than 100 Characters",
@@ -910,6 +937,7 @@ fun addingPage(mainViewModel: MainViewModel,navController: NavHostController, ca
                         ).show()
                         rating = rating.takeUnless { it.text.isEmpty() } ?: TextFieldValue("")
                     }
+
                 },
                 label = {
                     Text(text = "Rating in Number (0-5)")
@@ -936,6 +964,7 @@ fun addingPage(mainViewModel: MainViewModel,navController: NavHostController, ca
                 )
                 Box(modifier = Modifier
                     .width(50.dp)
+                    .padding(top = 20.dp)
                     .height(55.dp)
                     .shadow(5.dp, RoundedCornerShape(5.dp))
                     .background(color = backgroundWhite)
@@ -949,40 +978,48 @@ fun addingPage(mainViewModel: MainViewModel,navController: NavHostController, ca
                 }
             }
 
-            Spacer(modifier = Modifier.size(100.dp))
-            Button(
-                onClick = {
-                    mainViewModel.saveButton(
-                        SingleTrip(
-                            location.text,
-                            selectedDate.toString(), /*date.text,*/
-                            details.text,
-                            rating.text,
-                            capturedImageUri,
-                        )
-                    ); navController.navigate(Screen.ShowAllTrips.route)
-                },
+            Spacer(modifier = Modifier.size(25.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ){
+                Button(
+                onClick = {navController.navigate(Screen.ShowAllTrips.route)},
                 modifier = Modifier
                     .padding(top = 20.dp)
                     .shadow(elevation = 5.dp, shape = RoundedCornerShape(20.dp)),
                 colors = ButtonDefaults.buttonColors(orange),
-
-                ) {
-                Text(text = "Save", fontSize = 20.sp)
+            ) {
+                Text(text = "Back", fontSize = 20.sp)
             }
+
+                Button(
+                    onClick = {
+                        mainViewModel.saveButton(
+                            SingleTrip(
+                                location.text,
+                                selectedDate.toString(), /*date.text,*/
+                                details.text,
+                                rating.text,
+                                capturedImageUri,
+                            )
+                        ); navController.navigate(Screen.ShowAllTrips.route)
+                    },
+                    modifier = Modifier
+                        .padding(top = 20.dp)
+                        .shadow(elevation = 5.dp, shape = RoundedCornerShape(20.dp)),
+                    colors = ButtonDefaults.buttonColors(orange),
+
+                    ) {
+                    Text(text = "Save", fontSize = 20.sp)
+                }
+
+            }
+
         }
     }
     }
-//    else {
-//        CameraView(
-//            cameraViewModel = cameraViewModel,
-//            previewView = previewView,
-//            imageCapture = imageCapture,
-//            cameraExecutor = cameraExecutor,
-//            directory = directory,
-//            onImageCaptured = handleImageCaptured
-//        )
-//    }
 }
 
 
