@@ -7,11 +7,13 @@ import androidx.navigation.NavHostController
 import com.cc221002.mcfinalprojectmanuelprammer.data.TripsDao
 import com.cc221002.mcfinalprojectmanuelprammer.data.model.SingleTrip
 import com.cc221002.mcfinalprojectmanuelprammer.ui.view.Screen
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainViewModel (private val dao: TripsDao): ViewModel(){
     private val _mainViewState = MutableStateFlow(MainViewState())
@@ -82,14 +84,24 @@ class MainViewModel (private val dao: TripsDao): ViewModel(){
         }
     }
 
+    fun openAlertDialog(){
+        _mainViewState.update { it.copy(openAlertDialog = true) }
+    }
+    fun dismissAlertDialog(){
+        _mainViewState.update { it.copy(openAlertDialog = false) }
+    }
 
     fun deleteTrip(singleTrip: SingleTrip, navHostController: NavHostController) {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             dao.deleteTrip(singleTrip)
             Log.d("Delete","Normal Delete $singleTrip")
-            getTrips()
-            navHostController.navigate(Screen.ShowAllTrips.route)
+//            getTrips()
+            withContext(Dispatchers.Main) {
+
+                navHostController.navigate(Screen.ShowAllTrips.route)
+            }
         }
+
     }
 
 //    fun wipeDatabase(){

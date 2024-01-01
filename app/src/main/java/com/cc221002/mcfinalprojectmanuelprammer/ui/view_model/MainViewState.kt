@@ -1,5 +1,6 @@
 package com.cc221002.mcfinalprojectmanuelprammer.ui.view_model
 
+import android.app.AlertDialog
 import com.cc221002.mcfinalprojectmanuelprammer.data.model.SingleTrip
 import com.cc221002.mcfinalprojectmanuelprammer.ui.view.Screen
 
@@ -9,5 +10,5 @@ data class MainViewState(
     val selectedScreen: Screen = Screen.SplashScreen,
     val openTripDialog: Boolean = false,
     val openEditDialog: Boolean = false,
-
+    val openAlertDialog: Boolean = false,
     )

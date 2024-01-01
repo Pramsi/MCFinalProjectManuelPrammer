@@ -2,6 +2,8 @@
 
 package com.cc221002.mcfinalprojectmanuelprammer.ui.view
 
+import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.net.Uri
 import android.os.Build
@@ -40,6 +42,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -48,12 +51,10 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.BottomNavigation
-import androidx.compose.material.DismissDirection
-import androidx.compose.material.DismissState
-import androidx.compose.material.DismissValue
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.FractionalThreshold
-import androidx.compose.material.SwipeToDismiss
+import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddCircle
@@ -62,16 +63,21 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.rememberDismissState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DismissDirection
+import androidx.compose.material3.DismissState
+import androidx.compose.material3.DismissValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SwipeToDismiss
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
+import androidx.compose.material3.rememberDismissState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -98,6 +104,7 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.draw
 import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -150,7 +157,7 @@ sealed class Screen(val route: String) {
 @Composable
 fun MainView(mainViewModel: MainViewModel, cameraViewModel: CameraViewModel, previewView: PreviewView, imageCapture: ImageCapture, cameraExecutor: ExecutorService, directory: File) {
     val navController = rememberNavController()
-        Scaffold(
+    Scaffold(
         ) {
             NavHost(
                 navController = navController,
@@ -187,48 +194,71 @@ fun MainView(mainViewModel: MainViewModel, cameraViewModel: CameraViewModel, pre
         }
     }
 
+
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun showTrips(mainViewModel: MainViewModel,navController: NavHostController, cameraViewModel: CameraViewModel = CameraViewModel()) {
-    val trips = mainViewModel.trips.collectAsState()
+    val tripsState by mainViewModel.trips.collectAsState()
+    val trips = tripsState.toMutableList()
     val state = mainViewModel.mainViewState.collectAsState()
     val camState = cameraViewModel.cameraState.collectAsState()
 
-//    if(!state.value.openTripDialog){
-    LazyColumn(
-        verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundGreen)
+
+    Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { navController.navigate(Screen.AddingPage.route) },
+                modifier = Modifier
+                    .padding(16.dp)
+                    .size(50.dp)
+                    .shadow(7.dp, CircleShape)
+                    .border(BorderStroke(1.dp, orange), shape = CircleShape),
+                backgroundColor = backgroundWhite,
+            ) {
+                Icon(imageVector = Icons.Default.Add, contentDescription = "Add Trip", tint = orange)
+            }
+        }
     ) {
-        item {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(backgroundGreen),
+            verticalArrangement = Arrangement.SpaceEvenly,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
             Box(
                 modifier = Modifier
                     .padding(0.dp, 0.dp, 0.dp, 80.dp)
-                    .fillMaxSize(),
-                contentAlignment = Alignment.CenterStart
+                    .fillMaxWidth()
+//                .fillMaxSize(),
+                , contentAlignment = Alignment.CenterStart
             )
             {
                 Canvas(
-                modifier = Modifier
-                    .fillMaxSize()
-            ) {
-                translate(left = 0f, top = -450f) {
-                    drawCircle(backgroundWhite, radius = 300.dp.toPx())
-                    drawCircle(Black, radius = 298.dp.toPx(), style = Stroke(10f), alpha = 0.1f,)
-                    drawCircle(Black, radius = 299.dp.toPx(), style = Stroke(8f), alpha = 0.1f,)
-                    drawCircle(Black, radius = 299.dp.toPx(), style = Stroke(3f), alpha = 0.1f,)
-                    drawCircle(Black, radius = 300.dp.toPx(), style = Stroke(2f), alpha = 0.1f,)
-                    drawCircle(Black, radius = 300.dp.toPx(), style = Stroke(1f), alpha = 0.1f,)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                ) {
+                    translate(left = 0f, top = -450f) {
+                        drawCircle(backgroundWhite, radius = 300.dp.toPx())
+                        drawCircle(
+                            Black,
+                            radius = 298.dp.toPx(),
+                            style = Stroke(10f),
+                            alpha = 0.1f,
+                        )
+                        drawCircle(Black, radius = 299.dp.toPx(), style = Stroke(8f), alpha = 0.1f,)
+                        drawCircle(Black, radius = 299.dp.toPx(), style = Stroke(3f), alpha = 0.1f,)
+                        drawCircle(Black, radius = 300.dp.toPx(), style = Stroke(2f), alpha = 0.1f,)
+                        drawCircle(Black, radius = 300.dp.toPx(), style = Stroke(1f), alpha = 0.1f,)
+
+                    }
 
                 }
-
-            }
                 Column {
                     Text(
-                        text = "Manuel Prammer",
+                        text = "Your Adventures!",
                         fontWeight = FontWeight.Bold,
                         fontSize = 40.sp,
                         style = TextStyle(fontFamily = FontFamily.SansSerif),
@@ -249,171 +279,186 @@ fun showTrips(mainViewModel: MainViewModel,navController: NavHostController, cam
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(0.dp, 20.dp, 0.dp, 0.dp)
-
                     )
                 }
-
             }
+            Spacer(modifier = Modifier.height(5.dp))
 
-        }
-
-        items(trips.value)
-        {   trip ->
-            val currentTrip by rememberUpdatedState(trip)
-            val dismissState = rememberDismissState(
-                confirmStateChange = {
-                    when(it) {
-                        DismissValue.DismissedToStart -> {
-                            mainViewModel.deleteTrip(currentTrip,navController)
-                            Log.d("SWIPE", "$currentTrip")
-                            Log.d("SWIPE", "${currentTrip.id}")
-
-                            true
-                        }
-
-                        else -> {
+            LazyColumn(
+                state = rememberLazyListState(),
+                verticalArrangement = Arrangement.Top,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+            ) {
+                items(items = trips, key = { trip -> trip.id }) { trip ->
+                    val currentTrip by rememberUpdatedState(trip)
+                    val dismissState = rememberDismissState(
+                        confirmValueChange = {
+                            if (it == DismissValue.DismissedToStart) {
+                                mainViewModel.openAlertDialog()
+                            }
                             false
                         }
-                    }
-                }
-            )
-            
-            SwipeToDismiss(
-                state = dismissState,
-                modifier = Modifier
-                    .padding(vertical = 1.dp)
-                    .animateItemPlacement(),
-                dismissThresholds = {direction ->
-                    FractionalThreshold(
-                        if(direction == DismissDirection.EndToStart) 0.5f else 0.0f
                     )
-                },
-                background = {
-                    SwipeBackground(dismissState = dismissState)
-                },
-            )
-            {
-            Row (
-                modifier = Modifier
-                    .padding(20.dp, 15.dp)
-                    .shadow(elevation = 5.dp, shape = RoundedCornerShape(20.dp), clip = true)
-                    .clip(shape = RoundedCornerShape(20.dp))
-                    .background(backgroundWhite)
-                    .border(1.dp, Color.Black, shape = RoundedCornerShape(20.dp))
-                    .background(backgroundWhite)
-                    .clickable {
-                        mainViewModel.showTripWithID(trip.id)
-                        navController.navigate(Screen.ShowSingleTrip.route)
-                    },
-                horizontalArrangement = Arrangement.Center
-            ){
-                Spacer(
-                    modifier = Modifier
-                        .padding(2.dp)
-                )
-                Row(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .height(200.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Column(
+                    SwipeToDismiss(
+                        state = dismissState,
                         modifier = Modifier
-                            .height(200.dp)
-                            .fillParentMaxWidth(0.6F),
-                        verticalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = "Trip to:",
-                            textAlign = TextAlign.Start,
-                            fontSize = 20.sp,
-                            style = TextStyle(fontFamily = FontFamily.Monospace),
-                            color = Color.Black,
-                            modifier = Modifier
-                                .padding(5.dp, 15.dp, 0.dp, 5.dp)
-                        )
-
-                        Text(
-                            text = trip.location,
-                            textAlign = TextAlign.Start,
-                            fontSize = 30.sp,
-                            fontWeight = FontWeight.Bold,
-                            style = TextStyle(fontFamily = FontFamily.Monospace).copy(lineBreak = LineBreak.Paragraph),
-                            color = Color.Black,
-                            maxLines = 2,
-                            softWrap = true,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier
-                                .padding(5.dp)
-                                .fillParentMaxWidth(0.55F),
-                        )
-                        Text(
-                            text = trip.date,
-                            textAlign = TextAlign.Start,
-                            fontSize = 20.sp,
-                            style = TextStyle(fontFamily = FontFamily.Monospace),
-                            color = Color.Black,
-                            modifier = Modifier
-                                .padding(5.dp, 25.dp, 0.dp, 15.dp)
-                                .width(250.dp)
-                        )
-                    }
-                    Column(
-                        modifier = Modifier
-                            .fillParentMaxHeight()
-                            .fillParentMaxWidth(0.4F)
+                            .padding(vertical = 1.dp)
+                            .animateItemPlacement(),
+                        background = {
+                            SwipeBackground(dismissState = dismissState)
+                        },
+                        dismissContent = {
+                            ItemUi(
+                                mainViewModel = mainViewModel,
+                                navController = navController,
+                                trip = trip,
+                                itemIndex = trips.indexOf(trip)
+                            )
+                        }
                     )
-                    {
-                        Image(
-                            modifier = Modifier
-                                .fillParentMaxHeight()
-                                .fillParentMaxWidth(0.4F),
-                            painter = rememberImagePainter(trip.imageUri),
-                            contentDescription = "null",
-                            contentScale = ContentScale.Fit
-                        )
+                    if (state.value.openAlertDialog) {
+                        showDeleteConfirmationDialog(mainViewModel = mainViewModel, trip = currentTrip, navController = navController )
                     }
                 }
             }
-            }
-
         }
-//    }
     }
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize(),
-        contentAlignment = Alignment.BottomEnd
-    ) {
-            Button(
-                onClick = { navController.navigate(Screen.AddingPage.route) },
-                modifier = Modifier
-                    .padding(50.dp)
-                    .size(70.dp)
-                    .shadow(7.dp, CircleShape),
-                colors = ButtonDefaults.buttonColors(containerColor = backgroundWhite),
-                shape = CircleShape,
-                border = BorderStroke(1.dp, backgroundGreen),
-                ) {
-                Icon(imageVector = Icons.Default.Add, contentDescription = "Add Trip", tint = orange)
-            }
-
-    }
-
-//    if (state.value.openTripDialog) {
-//        showSingleTripModal(mainViewModel, navController)
-//    }
 }
 
+
 @Composable
-@OptIn(ExperimentalMaterialApi::class)
+fun showDeleteConfirmationDialog(
+    mainViewModel: MainViewModel,
+    trip: SingleTrip,
+    navController: NavHostController
+) {
+    AlertDialog(
+        onDismissRequest = { mainViewModel.dismissAlertDialog() },
+        title = { Text("Delete Trip?", color = Black, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth()) },
+        text = { Text("Are you sure you want to delete this trip?", color = Black) },
+        confirmButton = {
+            Button(
+                elevation = ButtonDefaults.buttonElevation(5.dp),
+                border = BorderStroke(1.dp, orange),
+                onClick = {
+                    mainViewModel.deleteTrip(trip, navController)
+                    // Dismiss the dialog after deletion
+                    mainViewModel.dismissAlertDialog()
+                },
+                colors = ButtonDefaults.buttonColors(backgroundWhite)
+            ) {
+                Text("Confirm")
+            }
+        },
+        dismissButton = {
+            Button(
+                onClick = { mainViewModel.dismissAlertDialog() },
+                colors = ButtonDefaults.buttonColors(Transparent)
+            ) {
+                Text("Cancel")
+            }
+        }
+    )
+
+}
+@Composable
+fun ItemUi(mainViewModel: MainViewModel, navController: NavHostController,trip:SingleTrip, itemIndex:Int){
+    Box {
+        Row(
+            modifier = Modifier
+                .padding(20.dp, 15.dp)
+                .shadow(elevation = 5.dp, shape = RoundedCornerShape(20.dp), clip = true)
+                .clip(shape = RoundedCornerShape(20.dp))
+                .background(backgroundWhite)
+                .border(1.dp, Color.Black, shape = RoundedCornerShape(20.dp))
+                .background(backgroundWhite)
+                .clickable {
+                    mainViewModel.showTripWithID(trip.id)
+                    navController.navigate(Screen.ShowSingleTrip.route)
+                },
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Log.d("TRIPS", "$trip")
+            Spacer(
+                modifier = Modifier
+                    .padding(2.dp)
+            )
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .height(200.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column(
+                    modifier = Modifier
+                        .height(200.dp)
+                    , verticalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "Trip to:",
+                        textAlign = TextAlign.Start,
+                        fontSize = 20.sp,
+                        style = TextStyle(fontFamily = FontFamily.Monospace),
+                        color = Color.Black,
+                        modifier = Modifier
+                            .padding(5.dp, 15.dp, 0.dp, 5.dp)
+                    )
+
+                    Text(
+                        text = trip.location,
+                        textAlign = TextAlign.Start,
+                        fontSize = 30.sp,
+                        fontWeight = FontWeight.Bold,
+                        style = TextStyle(fontFamily = FontFamily.Monospace).copy(lineBreak = LineBreak.Paragraph),
+                        color = Color.Black,
+                        maxLines = 2,
+                        softWrap = true,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier
+                            .padding(5.dp)
+                    )
+                    Text(
+                        text = trip.date,
+                        textAlign = TextAlign.Start,
+                        fontSize = 20.sp,
+                        style = TextStyle(fontFamily = FontFamily.Monospace),
+                        color = Color.Black,
+                        modifier = Modifier
+                            .padding(5.dp, 25.dp, 0.dp, 15.dp)
+                            .width(250.dp)
+                    )
+                }
+                Column(
+                    modifier = Modifier
+                )
+                {
+                    Image(
+                        modifier = Modifier
+                        , painter = rememberImagePainter(trip.imageUri),
+                        contentDescription = "null",
+                        contentScale = ContentScale.Fit
+                    )
+                }
+            }
+        }
+    }
+}
+
+
+
+@Composable
 fun SwipeBackground(dismissState: DismissState) {
     val direction = dismissState.dismissDirection ?: return
 
+    if (direction != DismissDirection.EndToStart) {
+        return // Only allow swipe from Start to End
+    }
     val color by animateColorAsState(
         when (dismissState.targetValue) {
-            DismissValue.Default -> Color.LightGray
+            DismissValue.Default -> Color.Transparent
             DismissValue.DismissedToEnd -> Color.Transparent
             DismissValue.DismissedToStart -> Color.Red
         }, label = "swipeanimate"
@@ -422,10 +467,8 @@ fun SwipeBackground(dismissState: DismissState) {
         DismissDirection.StartToEnd -> Alignment.CenterStart
         DismissDirection.EndToStart -> Alignment.CenterEnd
     }
-    val icon = when (direction) {
-        DismissDirection.StartToEnd -> Icons.Default.Done
-        DismissDirection.EndToStart -> Icons.Default.Delete
-    }
+    val icon = Icons.Default.Delete
+
     val scale by animateFloatAsState(
         if (dismissState.targetValue == DismissValue.Default) 0.75f else 1f, label = "floatanimate"
     )
@@ -869,11 +912,11 @@ fun addingPage(mainViewModel: MainViewModel,navController: NavHostController, ca
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .pointerInput(Unit){
-                                   detectTapGestures (
-                                       onTap = {focusManager.clearFocus()}
-                                   )
-                                   }
+                .pointerInput(Unit) {
+                    detectTapGestures(
+                        onTap = { focusManager.clearFocus() }
+                    )
+                }
             , verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
