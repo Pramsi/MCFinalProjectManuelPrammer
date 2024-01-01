@@ -202,6 +202,7 @@ fun MainView(mainViewModel: MainViewModel, cameraViewModel: CameraViewModel, pre
 fun showTrips(mainViewModel: MainViewModel,navController: NavHostController, cameraViewModel: CameraViewModel = CameraViewModel()) {
     val tripsState by mainViewModel.trips.collectAsState()
     val trips = tripsState.toMutableList()
+    val tripsCounter = trips.count()
     val state = mainViewModel.mainViewState.collectAsState()
     val camState = cameraViewModel.cameraState.collectAsState()
 
@@ -270,7 +271,7 @@ fun showTrips(mainViewModel: MainViewModel,navController: NavHostController, cam
 
                     )
                     Text(
-                        text = "Trips: 4",
+                        text = "Trips: $tripsCounter",
                         fontWeight = FontWeight.Bold,
                         fontSize = 40.sp,
                         style = TextStyle(fontFamily = FontFamily.SansSerif),
