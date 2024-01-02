@@ -3,17 +3,12 @@
 package com.cc221002.mcfinalprojectmanuelprammer.ui.view
 
 import android.annotation.SuppressLint
-import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.net.Uri
 import android.os.Build
 import android.util.Log
-import android.view.View
-import android.view.ViewTreeObserver
 import android.widget.Toast
-import android.window.SplashScreen
 import androidx.annotation.RequiresApi
-import androidx.camera.camera2.internal.annotation.CameraExecutor
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.view.PreviewView
@@ -41,27 +36,20 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
-import androidx.compose.material.BottomNavigation
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.FloatingActionButton
-import androidx.compose.material.FractionalThreshold
-import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Done
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
@@ -71,11 +59,9 @@ import androidx.compose.material3.DismissState
 import androidx.compose.material3.DismissValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SwipeToDismiss
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.rememberDismissState
 import androidx.compose.runtime.Composable
@@ -84,6 +70,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -92,9 +79,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Black
+import androidx.compose.ui.graphics.Color.Companion.Blue
 import androidx.compose.ui.graphics.Color.Companion.Gray
 import androidx.compose.ui.graphics.Color.Companion.Magenta
 import androidx.compose.ui.graphics.Color.Companion.Transparent
@@ -102,15 +89,12 @@ import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.draw
 import androidx.compose.ui.graphics.drawscope.translate
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.platform.LocalTextInputService
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -126,8 +110,8 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import coil.compose.ImagePainter.State.Empty.painter
 import coil.compose.rememberImagePainter
 import com.cc221002.mcfinalprojectmanuelprammer.R
 import com.cc221002.mcfinalprojectmanuelprammer.data.model.SingleTrip
@@ -137,7 +121,9 @@ import com.cc221002.mcfinalprojectmanuelprammer.ui.theme.backgroundGreen
 import com.cc221002.mcfinalprojectmanuelprammer.ui.theme.backgroundWhite
 import com.cc221002.mcfinalprojectmanuelprammer.ui.theme.orange
 import com.cc221002.mcfinalprojectmanuelprammer.ui.view_model.MainViewModel
+import com.cc221002.mcfinalprojectmanuelprammer.ui.view_model.SharedViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.io.File
 import java.text.SimpleDateFormat
 import java.time.LocalDate
@@ -157,6 +143,7 @@ sealed class Screen(val route: String) {
 @Composable
 fun MainView(mainViewModel: MainViewModel, cameraViewModel: CameraViewModel, previewView: PreviewView, imageCapture: ImageCapture, cameraExecutor: ExecutorService, directory: File) {
     val navController = rememberNavController()
+    val sharedViewModel = SharedViewModel()
     Scaffold(
         ) {
             NavHost(
@@ -181,13 +168,21 @@ fun MainView(mainViewModel: MainViewModel, cameraViewModel: CameraViewModel, pre
 
                 composable(Screen.AddingPage.route) {
                     mainViewModel.selectScreen(Screen.AddingPage)
-                    addingPage(mainViewModel,navController, cameraViewModel, previewView,imageCapture,cameraExecutor,directory, capturedImageUri = null)
+                    addingPage(sharedViewModel,mainViewModel,navController, cameraViewModel)
 
                 }
 
                 composable(Screen.CameraView.route) {
                     mainViewModel.selectScreen(Screen.CameraView)
-                    CameraView(navController, cameraViewModel, previewView,imageCapture,cameraExecutor,directory /*,capturedImageUri = null*/ )
+                    CameraView(
+                        sharedViewModel,
+                        navController,
+                        cameraViewModel,
+                        previewView,
+                        imageCapture,
+                        cameraExecutor,
+                        directory,
+                    )
 
                 }
             }
@@ -367,7 +362,7 @@ fun showDeleteConfirmationDialog(
 }
 @Composable
 fun ItemUi(mainViewModel: MainViewModel, navController: NavHostController,trip:SingleTrip, itemIndex:Int){
-    Box {
+    Box(modifier = Modifier.fillMaxSize()) {
         Row(
             modifier = Modifier
                 .padding(20.dp, 15.dp)
@@ -382,7 +377,7 @@ fun ItemUi(mainViewModel: MainViewModel, navController: NavHostController,trip:S
                 },
             horizontalArrangement = Arrangement.Center
         ) {
-            Log.d("TRIPS", "$trip")
+//            Log.d("TRIPS", "$trip")
             Spacer(
                 modifier = Modifier
                     .padding(2.dp)
@@ -396,6 +391,7 @@ fun ItemUi(mainViewModel: MainViewModel, navController: NavHostController,trip:S
                 Column(
                     modifier = Modifier
                         .height(200.dp)
+                        .fillMaxWidth(0.59f)
                     , verticalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
@@ -433,13 +429,13 @@ fun ItemUi(mainViewModel: MainViewModel, navController: NavHostController,trip:S
                     )
                 }
                 Column(
-                    modifier = Modifier
+                    modifier = Modifier.fillMaxHeight().fillMaxWidth()
                 )
                 {
                     Image(
-                        modifier = Modifier
+                        modifier = Modifier.fillMaxHeight()
                         , painter = rememberImagePainter(trip.imageUri),
-                        contentDescription = "null",
+                        contentDescription = "Picture of the trip",
                         contentScale = ContentScale.Fit
                     )
                 }
@@ -829,7 +825,7 @@ Row(
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun addingPage(mainViewModel: MainViewModel,navController: NavHostController, cameraViewModel: CameraViewModel, previewView: PreviewView, imageCapture: ImageCapture, cameraExecutor: ExecutorService, directory: File,capturedImageUri: String?) {
+fun addingPage(sharedViewModel: SharedViewModel,mainViewModel: MainViewModel,navController: NavHostController, cameraViewModel: CameraViewModel) {
     var location by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(
             TextFieldValue("")
@@ -845,12 +841,10 @@ fun addingPage(mainViewModel: MainViewModel,navController: NavHostController, ca
             TextFieldValue("")
         )
     }
-    var capturedImageUri by remember { mutableStateOf<String?>("") }
-    val handleImageCaptured: (String) -> Unit = { imageUri ->
-        capturedImageUri = imageUri
-    }
 
-    val camState = cameraViewModel.cameraState.collectAsState()
+    var imageUri = sharedViewModel.imageUri.collectAsState().value
+        Log.d("URI_DEBUG", "Retrieved URI: $imageUri")
+
 
     var selectedDate by rememberSaveable { mutableStateOf(LocalDate.now()) }
 
@@ -859,10 +853,6 @@ fun addingPage(mainViewModel: MainViewModel,navController: NavHostController, ca
     val mContext = LocalContext.current
     val maxNumberInput= 5
     val focusManager = LocalFocusManager.current
-    val keyboardController = LocalSoftwareKeyboardController.current
-
-
-    if(!camState.value.enableCameraPreview){
 
     Column(
         modifier = Modifier
@@ -989,9 +979,9 @@ fun addingPage(mainViewModel: MainViewModel,navController: NavHostController, ca
                 horizontalArrangement = Arrangement.Center
             ) {
                 TextField(
-                    value = capturedImageUri.toString(),
+                    value = imageUri.toString(),
                     onValueChange = { newText ->
-                        capturedImageUri = newText
+                        imageUri = newText
                     },
                     label = {
                         Text(text = "Image")
@@ -1009,10 +999,17 @@ fun addingPage(mainViewModel: MainViewModel,navController: NavHostController, ca
                     .background(color = backgroundWhite)
                     .clip(RoundedCornerShape(5.dp, 5.dp, 0.dp, 0.dp))
                     .clickable {
-                        navController.navigate(Screen.CameraView.route)
+                        navController.navigate(
+                            Screen.CameraView.route + "?imageUri=${
+                                Uri.encode(
+                                    imageUri
+                                    
+                                )
+                            }"
+                        )
                     },
                     contentAlignment = Alignment.Center
-                ){
+                ){Log.d("IMAGE", "the uri is $imageUri")
                     Icon(imageVector = Icons.Default.AddCircle, contentDescription = "", tint = Color.Black, modifier = Modifier.fillMaxSize())
                 }
             }
@@ -1041,7 +1038,7 @@ fun addingPage(mainViewModel: MainViewModel,navController: NavHostController, ca
                                 selectedDate.toString(), /*date.text,*/
                                 details.text,
                                 rating.text,
-                                capturedImageUri,
+                                imageUri,
                             )
                         ); navController.navigate(Screen.ShowAllTrips.route)
                     },
@@ -1059,7 +1056,7 @@ fun addingPage(mainViewModel: MainViewModel,navController: NavHostController, ca
         }
     }
     }
-}
+
 
 
 @Composable
@@ -1112,7 +1109,6 @@ fun RatingStarsWithText(rating: String) {
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun editTripModal(mainViewModel: MainViewModel){
     val state = mainViewModel.mainViewState.collectAsState()
@@ -1210,8 +1206,16 @@ fun editTripModal(mainViewModel: MainViewModel){
 
 
 @Composable
-fun CameraView(navController: NavHostController,cameraViewModel: CameraViewModel, previewView: PreviewView, imageCapture: ImageCapture, cameraExecutor: ExecutorService, directory: File/*, onImageCaptured:(String)-> Unit*/){
-    val camState = cameraViewModel.cameraState.collectAsState()
+fun CameraView(
+    sharedViewModel: SharedViewModel,
+    navController: NavHostController,
+    cameraViewModel: CameraViewModel,
+    previewView: PreviewView,
+    imageCapture: ImageCapture,
+    cameraExecutor: ExecutorService,
+    directory: File,
+){
+    val coroutineScope = rememberCoroutineScope()
 
     Box(
         contentAlignment = Alignment.BottomCenter,
@@ -1236,11 +1240,17 @@ fun CameraView(navController: NavHostController,cameraViewModel: CameraViewModel
 
                         override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
                             val imageUri = "file://${photoFile.absolutePath}"
+                            sharedViewModel.setImageUri(imageUri)
+
 //                            onImageCaptured(imageUri)
+                            Log.d("URI_DEBUG", "Image URI: $imageUri")
+                            coroutineScope.launch{
+                                navController.navigate(
+                                    "${Screen.AddingPage.route}?imageUri=${Uri.encode(imageUri.toString())}"
+                            )
+                            }
+
                             cameraViewModel.setNewUri(Uri.fromFile(photoFile))
-                            Log.d("PICTURE", "SAVED in ${Uri.fromFile(photoFile)}")
-                            Log.d("PICTURE", "SAVED in $photoFile")
-                            Log.d("PICTURE", "SAVED in $imageUri")
                         }
                     }
                 )
