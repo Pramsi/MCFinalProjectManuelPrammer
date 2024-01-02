@@ -63,9 +63,7 @@ class MainActivity : ComponentActivity() {
     private val preview: Preview = Preview.Builder().build()
 
     private fun setupCamera(){
-        Log.d("Setup", "This is the setup of the camera")
         previewView = PreviewView(this)
-
         cameraProviderFuture = ProcessCameraProvider.getInstance(this)
         cameraProviderFuture.addListener(
             {
@@ -87,7 +85,6 @@ class MainActivity : ComponentActivity() {
                 .build(),
             preview, imageCapture
         )
-
         preview.setSurfaceProvider(previewView.surfaceProvider)
     }
 

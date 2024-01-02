@@ -81,7 +81,6 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Black
-import androidx.compose.ui.graphics.Color.Companion.Blue
 import androidx.compose.ui.graphics.Color.Companion.Gray
 import androidx.compose.ui.graphics.Color.Companion.Magenta
 import androidx.compose.ui.graphics.Color.Companion.Transparent
@@ -94,7 +93,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -110,7 +108,6 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberImagePainter
 import com.cc221002.mcfinalprojectmanuelprammer.R
@@ -141,7 +138,14 @@ sealed class Screen(val route: String) {
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun MainView(mainViewModel: MainViewModel, cameraViewModel: CameraViewModel, previewView: PreviewView, imageCapture: ImageCapture, cameraExecutor: ExecutorService, directory: File) {
+fun MainView(
+    mainViewModel: MainViewModel,
+    cameraViewModel: CameraViewModel,
+    previewView: PreviewView,
+    imageCapture: ImageCapture,
+    cameraExecutor: ExecutorService,
+    directory: File
+) {
     val navController = rememberNavController()
     val sharedViewModel = SharedViewModel()
     Scaffold(
@@ -153,22 +157,36 @@ fun MainView(mainViewModel: MainViewModel, cameraViewModel: CameraViewModel, pre
             ) {
                 composable(Screen.SplashScreen.route) {
                     mainViewModel.selectScreen(Screen.SplashScreen)
-                    SplashScreen(navController)
+                    SplashScreen(
+                        navController,
+                    )
                 }
                 composable(Screen.ShowAllTrips.route) {
                     mainViewModel.selectScreen(Screen.ShowAllTrips)
                     mainViewModel.getTrips()
-                    showTrips(mainViewModel, navController, cameraViewModel)
+                    showTrips(
+                        mainViewModel,
+                        navController,
+                    )
                 }
 
                 composable(Screen.ShowSingleTrip.route) {
                     mainViewModel.selectScreen(Screen.ShowSingleTrip)
-                    showSingleTripModal(mainViewModel, navController)
+                    showSingleTripModal(
+                        mainViewModel,
+                        navController,
+                    )
+
                 }
 
                 composable(Screen.AddingPage.route) {
                     mainViewModel.selectScreen(Screen.AddingPage)
-                    addingPage(sharedViewModel,mainViewModel,navController, cameraViewModel)
+                    addingPage(
+                        sharedViewModel,
+                        mainViewModel,
+                        navController,
+                        cameraViewModel,
+                    )
 
                 }
 
@@ -177,7 +195,6 @@ fun MainView(mainViewModel: MainViewModel, cameraViewModel: CameraViewModel, pre
                     CameraView(
                         sharedViewModel,
                         navController,
-                        cameraViewModel,
                         previewView,
                         imageCapture,
                         cameraExecutor,
@@ -191,16 +208,17 @@ fun MainView(mainViewModel: MainViewModel, cameraViewModel: CameraViewModel, pre
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@OptIn(ExperimentalMaterialApi::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun showTrips(mainViewModel: MainViewModel,navController: NavHostController, cameraViewModel: CameraViewModel = CameraViewModel()) {
+fun showTrips(
+    mainViewModel: MainViewModel,
+    navController: NavHostController
+) {
     val tripsState by mainViewModel.trips.collectAsState()
     val trips = tripsState.toMutableList()
     val tripsCounter = trips.count()
     val state = mainViewModel.mainViewState.collectAsState()
-    val camState = cameraViewModel.cameraState.collectAsState()
-
 
     Scaffold(
         floatingActionButton = {
@@ -228,7 +246,6 @@ fun showTrips(mainViewModel: MainViewModel,navController: NavHostController, cam
                 modifier = Modifier
                     .padding(0.dp, 0.dp, 0.dp, 80.dp)
                     .fillMaxWidth()
-//                .fillMaxSize(),
                 , contentAlignment = Alignment.CenterStart
             )
             {
@@ -248,9 +265,7 @@ fun showTrips(mainViewModel: MainViewModel,navController: NavHostController, cam
                         drawCircle(Black, radius = 299.dp.toPx(), style = Stroke(3f), alpha = 0.1f,)
                         drawCircle(Black, radius = 300.dp.toPx(), style = Stroke(2f), alpha = 0.1f,)
                         drawCircle(Black, radius = 300.dp.toPx(), style = Stroke(1f), alpha = 0.1f,)
-
                     }
-
                 }
                 Column {
                     Text(
@@ -311,7 +326,6 @@ fun showTrips(mainViewModel: MainViewModel,navController: NavHostController, cam
                                 mainViewModel = mainViewModel,
                                 navController = navController,
                                 trip = trip,
-                                itemIndex = trips.indexOf(trip)
                             )
                         }
                     )
@@ -346,7 +360,7 @@ fun showDeleteConfirmationDialog(
                 },
                 colors = ButtonDefaults.buttonColors(backgroundWhite)
             ) {
-                Text("Confirm")
+                Text("Confirm", color = Black)
             }
         },
         dismissButton = {
@@ -354,14 +368,18 @@ fun showDeleteConfirmationDialog(
                 onClick = { mainViewModel.dismissAlertDialog() },
                 colors = ButtonDefaults.buttonColors(Transparent)
             ) {
-                Text("Cancel")
+                Text("Cancel", color = Black)
             }
         }
     )
 
 }
 @Composable
-fun ItemUi(mainViewModel: MainViewModel, navController: NavHostController,trip:SingleTrip, itemIndex:Int){
+fun ItemUi(
+    mainViewModel: MainViewModel,
+    navController: NavHostController,
+    trip:SingleTrip
+){
     Box(modifier = Modifier.fillMaxSize()) {
         Row(
             modifier = Modifier
@@ -377,7 +395,6 @@ fun ItemUi(mainViewModel: MainViewModel, navController: NavHostController,trip:S
                 },
             horizontalArrangement = Arrangement.Center
         ) {
-//            Log.d("TRIPS", "$trip")
             Spacer(
                 modifier = Modifier
                     .padding(2.dp)
@@ -399,7 +416,7 @@ fun ItemUi(mainViewModel: MainViewModel, navController: NavHostController,trip:S
                         textAlign = TextAlign.Start,
                         fontSize = 20.sp,
                         style = TextStyle(fontFamily = FontFamily.Monospace),
-                        color = Color.Black,
+                        color = Black,
                         modifier = Modifier
                             .padding(5.dp, 15.dp, 0.dp, 5.dp)
                     )
@@ -410,7 +427,7 @@ fun ItemUi(mainViewModel: MainViewModel, navController: NavHostController,trip:S
                         fontSize = 30.sp,
                         fontWeight = FontWeight.Bold,
                         style = TextStyle(fontFamily = FontFamily.Monospace).copy(lineBreak = LineBreak.Paragraph),
-                        color = Color.Black,
+                        color = Black,
                         maxLines = 2,
                         softWrap = true,
                         overflow = TextOverflow.Ellipsis,
@@ -422,7 +439,7 @@ fun ItemUi(mainViewModel: MainViewModel, navController: NavHostController,trip:S
                         textAlign = TextAlign.Start,
                         fontSize = 20.sp,
                         style = TextStyle(fontFamily = FontFamily.Monospace),
-                        color = Color.Black,
+                        color = Black,
                         modifier = Modifier
                             .padding(5.dp, 25.dp, 0.dp, 15.dp)
                             .width(250.dp)
@@ -447,7 +464,9 @@ fun ItemUi(mainViewModel: MainViewModel, navController: NavHostController,trip:S
 
 
 @Composable
-fun SwipeBackground(dismissState: DismissState) {
+fun SwipeBackground(
+    dismissState: DismissState
+) {
     val direction = dismissState.dismissDirection ?: return
 
     if (direction != DismissDirection.EndToStart) {
@@ -471,7 +490,7 @@ fun SwipeBackground(dismissState: DismissState) {
     )
 
     Box(
-        Modifier
+        modifier = Modifier
             .fillMaxSize()
             .background(color)
             .padding(horizontal = 20.dp),
@@ -486,7 +505,10 @@ fun SwipeBackground(dismissState: DismissState) {
 }
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun showSingleTripModal(mainViewModel: MainViewModel, navController: NavHostController) {
+fun showSingleTripModal(
+    mainViewModel: MainViewModel,
+    navController: NavHostController
+) {
     val selectedTrip = mainViewModel.selectedTrip.collectAsState()
 
     LazyColumn(
@@ -517,7 +539,7 @@ fun showSingleTripModal(mainViewModel: MainViewModel, navController: NavHostCont
                         .shadow(elevation = 5.dp, shape = RoundedCornerShape(20.dp), clip = true)
                         .clip(shape = RoundedCornerShape(20.dp))
                         .background(backgroundWhite)
-                        .border(1.dp, Color.Black, shape = RoundedCornerShape(20.dp))
+                        .border(1.dp, Black, shape = RoundedCornerShape(20.dp))
                         .background(backgroundWhite),
                     horizontalArrangement = Arrangement.Center
                 ){
@@ -543,11 +565,10 @@ fun showSingleTripModal(mainViewModel: MainViewModel, navController: NavHostCont
                                 fontSize = 35.sp,
                                 fontWeight = FontWeight.Bold,
                                 style = TextStyle(fontFamily = FontFamily.Monospace),
-                                color = Color.Black,
+                                color = Black,
                                 modifier = Modifier
                                     .padding(5.dp, 15.dp, 0.dp, 5.dp)
                             )
-
                             Text(
                                 text = trip.date,
                                 textAlign = TextAlign.Start,
@@ -583,7 +604,7 @@ fun showSingleTripModal(mainViewModel: MainViewModel, navController: NavHostCont
                         .shadow(elevation = 5.dp, shape = RoundedCornerShape(20.dp), clip = true)
                         .clip(shape = RoundedCornerShape(20.dp))
                         .background(backgroundWhite)
-                        .border(1.dp, Color.Black, shape = RoundedCornerShape(20.dp))
+                        .border(1.dp, Black, shape = RoundedCornerShape(20.dp))
                         .background(backgroundWhite),
                     horizontalArrangement = Arrangement.Center
                 ) {
@@ -610,7 +631,7 @@ fun showSingleTripModal(mainViewModel: MainViewModel, navController: NavHostCont
                                 fontSize = 30.sp,
                                 fontWeight = FontWeight.Bold,
                                 style = TextStyle(fontFamily = FontFamily.Monospace).copy(lineBreak = LineBreak.Paragraph),
-                                color = Color.Black,
+                                color = Black,
                                 maxLines = 3,
                                 modifier = Modifier
                                     .padding(0.dp, 15.dp, 0.dp, 15.dp)
@@ -623,7 +644,7 @@ fun showSingleTripModal(mainViewModel: MainViewModel, navController: NavHostCont
                                 textAlign = TextAlign.Start,
                                 fontSize = 20.sp,
                                 style = TextStyle(fontFamily = FontFamily.Monospace),
-                                color = Color.Black,
+                                color = Black,
                                 modifier = Modifier
                                     .padding(5.dp, 15.dp, 25.dp, 15.dp)
                                     .fillMaxWidth()
@@ -728,17 +749,17 @@ fun showSingleTripModal(mainViewModel: MainViewModel, navController: NavHostCont
                               style = Stroke(2f),
                               path = triangleBorder)
                       }
-
                 }
             }
         }
     }
 }
     @Composable
-    fun SplashScreen(navController: NavHostController) {
+    fun SplashScreen(
+        navController: NavHostController
+    ) {
 
         val loadingFinished = remember { mutableStateOf(false) }
-
 
         // Introduce a 2-second delay to simulate loading
         LaunchedEffect(Unit) {
@@ -841,11 +862,7 @@ fun addingPage(sharedViewModel: SharedViewModel,mainViewModel: MainViewModel,nav
             TextFieldValue("")
         )
     }
-
     var imageUri = sharedViewModel.imageUri.collectAsState().value
-        Log.d("URI_DEBUG", "Retrieved URI: $imageUri")
-
-
     var selectedDate by rememberSaveable { mutableStateOf(LocalDate.now()) }
 
     val maxLocationInputLength = 40
@@ -880,9 +897,7 @@ fun addingPage(sharedViewModel: SharedViewModel,mainViewModel: MainViewModel,nav
                         drawCircle(Black, radius = 299.dp.toPx(), style = Stroke(3f), alpha = 0.1f,)
                         drawCircle(Black, radius = 300.dp.toPx(), style = Stroke(2f), alpha = 0.1f,)
                         drawCircle(Black, radius = 300.dp.toPx(), style = Stroke(1f), alpha = 0.1f,)
-
                     }
-
                 }
                 Column {
                     Text(
@@ -966,7 +981,6 @@ fun addingPage(sharedViewModel: SharedViewModel,mainViewModel: MainViewModel,nav
                         ).show()
                         rating = rating.takeUnless { it.text.isEmpty() } ?: TextFieldValue("")
                     }
-
                 },
                 label = {
                     Text(text = "Rating in Number (0-5)")
@@ -1003,18 +1017,18 @@ fun addingPage(sharedViewModel: SharedViewModel,mainViewModel: MainViewModel,nav
                             Screen.CameraView.route + "?imageUri=${
                                 Uri.encode(
                                     imageUri
-                                    
                                 )
                             }"
                         )
                     },
                     contentAlignment = Alignment.Center
-                ){Log.d("IMAGE", "the uri is $imageUri")
-                    Icon(imageVector = Icons.Default.AddCircle, contentDescription = "", tint = Color.Black, modifier = Modifier.fillMaxSize())
+                ){
+                    Icon(imageVector = Icons.Default.AddCircle, contentDescription = "Take Picture", tint = Black, modifier = Modifier.fillMaxSize())
                 }
             }
 
             Spacer(modifier = Modifier.size(25.dp))
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth(),
@@ -1029,13 +1043,12 @@ fun addingPage(sharedViewModel: SharedViewModel,mainViewModel: MainViewModel,nav
             ) {
                 Text(text = "Back", fontSize = 20.sp)
             }
-
                 Button(
                     onClick = {
                         mainViewModel.saveButton(
                             SingleTrip(
                                 location.text,
-                                selectedDate.toString(), /*date.text,*/
+                                selectedDate.toString(),
                                 details.text,
                                 rating.text,
                                 imageUri,
@@ -1046,18 +1059,13 @@ fun addingPage(sharedViewModel: SharedViewModel,mainViewModel: MainViewModel,nav
                         .padding(top = 20.dp)
                         .shadow(elevation = 5.dp, shape = RoundedCornerShape(20.dp)),
                     colors = ButtonDefaults.buttonColors(orange),
-
                     ) {
                     Text(text = "Save", fontSize = 20.sp)
                 }
-
             }
-
         }
     }
-    }
-
-
+}
 
 @Composable
 fun RatingStarsWithText(rating: String) {
@@ -1068,7 +1076,7 @@ fun RatingStarsWithText(rating: String) {
         textAlign = TextAlign.Start,
         fontSize = 20.sp,
         style = TextStyle(fontFamily = FontFamily.Monospace),
-        color = Color.Black,
+        color = Black,
         modifier = Modifier.padding(5.dp, 0.dp, 0.dp, 0.dp)
     )
     Box() {
@@ -1083,12 +1091,11 @@ fun RatingStarsWithText(rating: String) {
                     contentDescription = "Gray Star",
                     modifier = Modifier
                         .size(24.dp)
-                        .padding(end = 4.dp), // Adjust padding as needed
+                        .padding(end = 4.dp),
                     tint = Gray
                 )
             }
         }
-
         // Overlay yellow stars based on the rating value
         Row(
             horizontalArrangement = Arrangement.Start,
@@ -1100,7 +1107,7 @@ fun RatingStarsWithText(rating: String) {
                     contentDescription = "Yellow Star",
                     modifier = Modifier
                         .size(24.dp)
-                        .padding(end = 4.dp), // Adjust padding as needed
+                        .padding(end = 4.dp),
                     tint = orange
                 )
             }
@@ -1110,7 +1117,9 @@ fun RatingStarsWithText(rating: String) {
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun editTripModal(mainViewModel: MainViewModel){
+fun editTripModal(
+    mainViewModel: MainViewModel
+){
     val state = mainViewModel.mainViewState.collectAsState()
 
     if(state.value.openEditDialog){
@@ -1209,7 +1218,6 @@ fun editTripModal(mainViewModel: MainViewModel){
 fun CameraView(
     sharedViewModel: SharedViewModel,
     navController: NavHostController,
-    cameraViewModel: CameraViewModel,
     previewView: PreviewView,
     imageCapture: ImageCapture,
     cameraExecutor: ExecutorService,
@@ -1235,22 +1243,14 @@ fun CameraView(
                     cameraExecutor,
                     object : ImageCapture.OnImageSavedCallback{
                         override fun onError(exception: ImageCaptureException){
-                            Log.e("PICTURE","Error when capturing image")
                         }
 
                         override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
                             val imageUri = "file://${photoFile.absolutePath}"
                             sharedViewModel.setImageUri(imageUri)
-
-//                            onImageCaptured(imageUri)
-                            Log.d("URI_DEBUG", "Image URI: $imageUri")
                             coroutineScope.launch{
-                                navController.navigate(
-                                    "${Screen.AddingPage.route}?imageUri=${Uri.encode(imageUri.toString())}"
-                            )
+                                navController.navigate(Screen.AddingPage.route)
                             }
-
-                            cameraViewModel.setNewUri(Uri.fromFile(photoFile))
                         }
                     }
                 )
@@ -1259,7 +1259,7 @@ fun CameraView(
             Icon(Icons.Default.AddCircle, "Take Photo", tint = backgroundWhite)
         }
         Button(onClick = { navController.navigate(Screen.AddingPage.route)}) {
-            Text(text = "back")
+            Text(text = "Back")
         }
     }
 }

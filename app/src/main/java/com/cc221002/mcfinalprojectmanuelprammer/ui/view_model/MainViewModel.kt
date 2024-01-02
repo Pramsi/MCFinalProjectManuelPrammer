@@ -45,7 +45,6 @@ class MainViewModel (private val dao: TripsDao): ViewModel(){
     fun getTrips() {
         viewModelScope.launch {
             dao.getTrips().collect{trips ->
-//                _mainViewState.update { it.copy(trips = trips) }
                 _trips.value = trips
             }
         }
@@ -95,9 +94,7 @@ class MainViewModel (private val dao: TripsDao): ViewModel(){
         viewModelScope.launch(Dispatchers.IO) {
             dao.deleteTrip(singleTrip)
             Log.d("Delete","Normal Delete $singleTrip")
-//            getTrips()
             withContext(Dispatchers.Main) {
-
                 navHostController.navigate(Screen.ShowAllTrips.route)
             }
         }
