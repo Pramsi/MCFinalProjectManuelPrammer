@@ -92,6 +92,8 @@ class MainViewModel (private val dao: TripsDao): ViewModel(){
     }
     fun dismissAlertDialog(){
         _mainViewState.update { it.copy(openAlertDialog = false) }
+        _openAlertDialogForTrip.value = ""
+
     }
 
     fun deleteTrip(singleTrip: SingleTrip, navHostController: NavHostController) {
