@@ -1171,11 +1171,14 @@ fun editTripModal(
         }
         var newImageUri = sharedViewModel.imageUri.collectAsState().value
 
+        if(newImageUri =="") {
+            newImageUri = imageUri
+        }
+
         val maxLocationInputLength = 50
         val maxDetailsInputLength = 250
         val mContext = LocalContext.current
         val maxNumberInput= 5
-
         AlertDialog(
             onDismissRequest = {
                 mainViewModel.dismissEditDialog()
@@ -1201,10 +1204,8 @@ fun editTripModal(
                 ) {
                     TextField(
                         textStyle = TextStyle(fontFamily = FontFamily.Monospace).copy(lineBreak = LineBreak.Paragraph),
-                        value = imageUri.toString(),
-                        onValueChange = { newText ->
-                            newImageUri = newText
-                        },
+                        value = newImageUri.toString(),
+                        onValueChange = {},
                         label = {
                             Text(text = "Image")
                         },
@@ -1274,6 +1275,7 @@ fun editTripModal(
             confirmButton = {
                 Button(
                     onClick = {
+                        Log.d("Image_Debug", "save $newImageUri")
                         mainViewModel.saveEditedTrip(
                             SingleTrip(
                                 location,
