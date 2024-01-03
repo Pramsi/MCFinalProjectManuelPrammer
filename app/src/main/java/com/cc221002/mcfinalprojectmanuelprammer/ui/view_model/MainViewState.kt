@@ -11,4 +11,5 @@ data class MainViewState(
     val openTripDialog: Boolean = false,
     val openEditDialog: Boolean = false,
     val openAlertDialog: Boolean = false,
+    val openAlertDialogForTrip: String = "",
     )

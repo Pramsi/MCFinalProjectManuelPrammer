@@ -43,7 +43,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -71,7 +70,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -208,7 +206,7 @@ fun MainView(
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun showTrips(
@@ -304,11 +302,11 @@ fun showTrips(
                     .fillMaxWidth()
             ) {
                 items(items = trips, key = { trip -> trip.id }) { trip ->
-                    val currentTrip by rememberUpdatedState(trip)
+
                     val dismissState = rememberDismissState(
                         confirmValueChange = {
                             if (it == DismissValue.DismissedToStart) {
-                                mainViewModel.openAlertDialog()
+                                mainViewModel.openAlertDialog(trip.id.toString())
                             }
                             false
                         }
@@ -327,10 +325,20 @@ fun showTrips(
                                 navController = navController,
                                 trip = trip,
                             )
-                        }
+                        },
+
                     )
-                    if (state.value.openAlertDialog) {
-                        showDeleteConfirmationDialog(mainViewModel = mainViewModel, trip = currentTrip, navController = navController )
+
+                    val openAlertDialogForTrip = mainViewModel.openAlertDialogForTrip.value
+
+                    if (openAlertDialogForTrip == trip.id.toString()) {
+                        showDeleteConfirmationDialog(
+                            mainViewModel = mainViewModel,
+                            trip = trip,
+                            onDeleteConfirmed = {
+                                mainViewModel.dismissAlertDialog()
+                                mainViewModel.deleteTrip(it,navController)
+                            })
                     }
                 }
             }
@@ -343,7 +351,7 @@ fun showTrips(
 fun showDeleteConfirmationDialog(
     mainViewModel: MainViewModel,
     trip: SingleTrip,
-    navController: NavHostController
+    onDeleteConfirmed: (SingleTrip) -> Unit
 ) {
     AlertDialog(
         onDismissRequest = { mainViewModel.dismissAlertDialog() },
@@ -354,9 +362,7 @@ fun showDeleteConfirmationDialog(
                 elevation = ButtonDefaults.buttonElevation(5.dp),
                 border = BorderStroke(1.dp, orange),
                 onClick = {
-                    mainViewModel.deleteTrip(trip, navController)
-                    // Dismiss the dialog after deletion
-                    mainViewModel.dismissAlertDialog()
+                    onDeleteConfirmed(trip) // Perform deletion on confirmation
                 },
                 colors = ButtonDefaults.buttonColors(backgroundWhite)
             ) {
@@ -372,7 +378,6 @@ fun showDeleteConfirmationDialog(
             }
         }
     )
-
 }
 @Composable
 fun ItemUi(
@@ -463,6 +468,7 @@ fun ItemUi(
 
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SwipeBackground(
     dismissState: DismissState

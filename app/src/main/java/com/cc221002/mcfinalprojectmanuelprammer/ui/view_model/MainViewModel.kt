@@ -1,19 +1,19 @@
 package com.cc221002.mcfinalprojectmanuelprammer.ui.view_model
 
 import android.util.Log
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.cc221002.mcfinalprojectmanuelprammer.data.TripsDao
 import com.cc221002.mcfinalprojectmanuelprammer.data.model.SingleTrip
 import com.cc221002.mcfinalprojectmanuelprammer.ui.view.Screen
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class MainViewModel (private val dao: TripsDao): ViewModel(){
     private val _mainViewState = MutableStateFlow(MainViewState())
@@ -25,6 +25,8 @@ class MainViewModel (private val dao: TripsDao): ViewModel(){
     private val _selectedTrip = MutableStateFlow<SingleTrip?>(null)
     val selectedTrip: StateFlow<SingleTrip?> = _selectedTrip.asStateFlow()
 
+    private val _openAlertDialogForTrip = mutableStateOf<String?>(null)
+    val openAlertDialogForTrip: State<String?> = _openAlertDialogForTrip
 
 //    fun insertPreTrips(){
 //        val hardcodedSamples = listOf(
@@ -83,20 +85,22 @@ class MainViewModel (private val dao: TripsDao): ViewModel(){
         }
     }
 
-    fun openAlertDialog(){
+    fun openAlertDialog(tripId: String) {
         _mainViewState.update { it.copy(openAlertDialog = true) }
+        _openAlertDialogForTrip.value = tripId
+
     }
     fun dismissAlertDialog(){
         _mainViewState.update { it.copy(openAlertDialog = false) }
     }
 
     fun deleteTrip(singleTrip: SingleTrip, navHostController: NavHostController) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch() {
             dao.deleteTrip(singleTrip)
             Log.d("Delete","Normal Delete $singleTrip")
-            withContext(Dispatchers.Main) {
+//            withContext(Dispatchers.Main) {
                 navHostController.navigate(Screen.ShowAllTrips.route)
-            }
+//            }
         }
 
     }
