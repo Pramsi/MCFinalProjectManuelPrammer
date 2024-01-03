@@ -1000,6 +1000,7 @@ fun addingPage(sharedViewModel: SharedViewModel,mainViewModel: MainViewModel,nav
                 horizontalArrangement = Arrangement.Center
             ) {
                 TextField(
+                    textStyle = TextStyle(fontFamily = FontFamily.Monospace).copy(lineBreak = LineBreak.Paragraph),
                     value = imageUri.toString(),
                     onValueChange = { newText ->
                         imageUri = newText
@@ -1008,9 +1009,11 @@ fun addingPage(sharedViewModel: SharedViewModel,mainViewModel: MainViewModel,nav
                         Text(text = "Image")
                     },
                     readOnly = true,
+                    maxLines = 1,
                     modifier = Modifier
                         .width(230.dp)
-                        .padding(top = 20.dp)
+                        .padding(top = 20.dp),
+
                 )
                 Box(modifier = Modifier
                     .width(50.dp)
@@ -1061,6 +1064,7 @@ fun addingPage(sharedViewModel: SharedViewModel,mainViewModel: MainViewModel,nav
                                 imageUri,
                             )
                         ); navController.navigate(Screen.ShowAllTrips.route)
+                        sharedViewModel.setImageUri("")
                     },
                     modifier = Modifier
                         .padding(top = 20.dp)
