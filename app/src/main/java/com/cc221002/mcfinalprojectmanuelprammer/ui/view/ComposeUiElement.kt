@@ -64,6 +64,7 @@ import androidx.compose.material3.SwipeToDismiss
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.rememberDismissState
+import androidx.compose.runtime.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -104,6 +105,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.navigation.compose.*
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -174,6 +176,7 @@ fun MainView(
                     showSingleTripModal(
                         mainViewModel,
                         navController,
+                        cameraViewModel
                     )
 
                 }
@@ -193,6 +196,7 @@ fun MainView(
                     mainViewModel.selectScreen(Screen.CameraView)
                     CameraView(
                         sharedViewModel,
+                        cameraViewModel,
                         navController,
                         previewView,
                         imageCapture,
@@ -514,7 +518,8 @@ fun SwipeBackground(
 @Composable
 fun showSingleTripModal(
     mainViewModel: MainViewModel,
-    navController: NavHostController
+    navController: NavHostController,
+    cameraViewModel: CameraViewModel
 ) {
     val selectedTrip = mainViewModel.selectedTrip.collectAsState()
 
@@ -708,7 +713,11 @@ fun showSingleTripModal(
         }
 
     Column {
-        editTripModal(mainViewModel)
+        editTripModal(
+            mainViewModel,
+            navController,
+            cameraViewModel
+        )
     }
 
     Box(
@@ -1023,13 +1032,8 @@ fun addingPage(sharedViewModel: SharedViewModel,mainViewModel: MainViewModel,nav
                     .background(color = backgroundWhite)
                     .clip(RoundedCornerShape(5.dp, 5.dp, 0.dp, 0.dp))
                     .clickable {
-                        navController.navigate(
-                            Screen.CameraView.route + "?imageUri=${
-                                Uri.encode(
-                                    imageUri
-                                )
-                            }"
-                        )
+                        cameraViewModel.setForAdding(true)
+                        navController.navigate(Screen.CameraView.route) // For adding a new trip
                     },
                     contentAlignment = Alignment.Center
                 ){
@@ -1129,7 +1133,9 @@ fun RatingStarsWithText(rating: String) {
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun editTripModal(
-    mainViewModel: MainViewModel
+    mainViewModel: MainViewModel,
+    navController: NavHostController,
+    cameraViewModel: CameraViewModel
 ){
     val state = mainViewModel.mainViewState.collectAsState()
 
@@ -1146,6 +1152,10 @@ fun editTripModal(
         var rating by rememberSaveable {
             mutableStateOf(state.value.editSingleTrip.rating)
         }
+        var imageUri by rememberSaveable{
+            mutableStateOf(state.value.editSingleTrip.imageUri)
+        }
+
         val maxLocationInputLength = 50
         val maxDetailsInputLength = 250
         val mContext = LocalContext.current
@@ -1195,6 +1205,43 @@ fun editTripModal(
                         label = { Text(text = "Rating" ) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                     )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        TextField(
+                            textStyle = TextStyle(fontFamily = FontFamily.Monospace).copy(lineBreak = LineBreak.Paragraph),
+                            value = imageUri.toString(),
+                            onValueChange = { newText ->
+                                imageUri = newText
+                            },
+                            label = {
+                                Text(text = "Image")
+                            },
+                            readOnly = true,
+                            maxLines = 1,
+                            modifier = Modifier
+                                .width(230.dp)
+                                .padding(top = 20.dp),
+
+                            )
+                        Box(modifier = Modifier
+                            .width(50.dp)
+                            .padding(top = 20.dp)
+                            .height(55.dp)
+                            .shadow(5.dp, RoundedCornerShape(5.dp))
+                            .background(color = backgroundWhite)
+                            .clip(RoundedCornerShape(5.dp, 5.dp, 0.dp, 0.dp))
+                            .clickable {
+                                cameraViewModel.setForEditing(true)
+                                navController.navigate(Screen.CameraView.route) // For editing an existing trip
+                            },
+                            contentAlignment = Alignment.Center
+                        ){
+                            Icon(imageVector = Icons.Default.AddCircle, contentDescription = "Take Picture", tint = Black, modifier = Modifier.fillMaxSize())
+                        }
+                    }
                 }
             },
             confirmButton = {
@@ -1206,7 +1253,7 @@ fun editTripModal(
                                 date,
                                 details,
                                 rating,
-                                "", //TODO the editing of image
+                                imageUri,
                                 state.value.editSingleTrip.id
                             )
                         )
@@ -1228,12 +1275,16 @@ fun editTripModal(
 @Composable
 fun CameraView(
     sharedViewModel: SharedViewModel,
+    cameraViewModel: CameraViewModel,
     navController: NavHostController,
     previewView: PreviewView,
     imageCapture: ImageCapture,
     cameraExecutor: ExecutorService,
     directory: File,
 ){
+    val forAdding = cameraViewModel.forAdding.value
+    val forEditing = cameraViewModel.forEditing.value
+
     val coroutineScope = rememberCoroutineScope()
 
     Box(
@@ -1249,7 +1300,16 @@ fun CameraView(
             horizontalArrangement = Arrangement.SpaceEvenly
 
         ){
-            Button(onClick = { navController.navigate(Screen.AddingPage.route)},
+            Button(
+                onClick = {if (forAdding) {
+                    // Navigate back to addingPage with the captured image URI
+                    navController.navigate(Screen.AddingPage.route)
+                    cameraViewModel.setForAdding(false)
+                } else if (forEditing) {
+                    // Navigate back to editing with the captured image URI
+                    navController.navigate(Screen.ShowSingleTrip.route)
+                    cameraViewModel.setForEditing(false)
+                }},
                 colors = ButtonDefaults.buttonColors(orange),
                 elevation = ButtonDefaults.elevatedButtonElevation(5.dp)
             ) {
@@ -1274,7 +1334,15 @@ fun CameraView(
                                 val imageUri = "file://${photoFile.absolutePath}"
                                 sharedViewModel.setImageUri(imageUri)
                                 coroutineScope.launch{
-                                    navController.navigate(Screen.AddingPage.route)
+                                    if (forAdding) {
+                                        // Navigate back to addingPage with the captured image URI
+                                        navController.navigate(Screen.AddingPage.route)
+                                        cameraViewModel.setForAdding(false)
+                                    } else if (forEditing) {
+                                        // Navigate back to editing with the captured image URI
+                                        navController.navigate(Screen.ShowSingleTrip.route)
+                                        cameraViewModel.setForEditing(false)
+                                    }
                                 }
                             }
                         }
