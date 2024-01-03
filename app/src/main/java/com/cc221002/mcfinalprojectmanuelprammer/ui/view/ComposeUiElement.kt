@@ -43,6 +43,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
+import androidx.compose.material.ButtonElevation
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -1236,37 +1237,53 @@ fun CameraView(
         modifier = Modifier.fillMaxSize()
         ){
         AndroidView({previewView}, modifier = Modifier.fillMaxSize())
-        Button(
-            modifier = Modifier.padding(25.dp),
-            onClick = {
-                val photoFile = File(
-                    directory,
-                    SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.GERMANY).format(System.currentTimeMillis()) + ".jpg"
-                )
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = 5.dp),
+            verticalAlignment = Alignment.Bottom,
+            horizontalArrangement = Arrangement.SpaceEvenly
 
-                imageCapture.takePicture(
-                    ImageCapture.OutputFileOptions.Builder(photoFile).build(),
-                    cameraExecutor,
-                    object : ImageCapture.OnImageSavedCallback{
-                        override fun onError(exception: ImageCaptureException){
-                        }
+        ){
+            Button(onClick = { navController.navigate(Screen.AddingPage.route)},
+                colors = ButtonDefaults.buttonColors(orange),
+                elevation = ButtonDefaults.elevatedButtonElevation(5.dp)
+            ) {
+            Text(text = "Back",color = Color.Black)
+        }
+            Button(
+                modifier = Modifier,
+                onClick = {
+                    val photoFile = File(
+                        directory,
+                        SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.GERMANY).format(System.currentTimeMillis()) + ".jpg"
+                    )
 
-                        override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                            val imageUri = "file://${photoFile.absolutePath}"
-                            sharedViewModel.setImageUri(imageUri)
-                            coroutineScope.launch{
-                                navController.navigate(Screen.AddingPage.route)
+                    imageCapture.takePicture(
+                        ImageCapture.OutputFileOptions.Builder(photoFile).build(),
+                        cameraExecutor,
+                        object : ImageCapture.OnImageSavedCallback{
+                            override fun onError(exception: ImageCaptureException){
+                            }
+
+                            override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                                val imageUri = "file://${photoFile.absolutePath}"
+                                sharedViewModel.setImageUri(imageUri)
+                                coroutineScope.launch{
+                                    navController.navigate(Screen.AddingPage.route)
+                                }
                             }
                         }
-                    }
-                )
+                    )
+                },
+                colors = ButtonDefaults.buttonColors(orange),
+                elevation = ButtonDefaults.elevatedButtonElevation(5.dp)
+            ) {
+                Icon(Icons.Default.AddCircle, "Take Photo", tint = backgroundWhite)
             }
-        ) {
-            Icon(Icons.Default.AddCircle, "Take Photo", tint = backgroundWhite)
+
         }
-        Button(onClick = { navController.navigate(Screen.AddingPage.route)}) {
-            Text(text = "Back")
-        }
+
     }
 }
 
