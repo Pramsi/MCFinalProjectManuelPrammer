@@ -4,7 +4,6 @@ package com.cc221002.mcfinalprojectmanuelprammer.ui.view
 
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog
-import android.net.Uri
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
@@ -43,7 +42,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
-import androidx.compose.material.ButtonElevation
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -118,6 +116,7 @@ import com.cc221002.mcfinalprojectmanuelprammer.ui.theme.adventureRed
 import com.cc221002.mcfinalprojectmanuelprammer.ui.theme.backgroundGreen
 import com.cc221002.mcfinalprojectmanuelprammer.ui.theme.backgroundWhite
 import com.cc221002.mcfinalprojectmanuelprammer.ui.theme.orange
+import com.cc221002.mcfinalprojectmanuelprammer.ui.view_model.AddingPageViewModel
 import com.cc221002.mcfinalprojectmanuelprammer.ui.view_model.MainViewModel
 import com.cc221002.mcfinalprojectmanuelprammer.ui.view_model.SharedViewModel
 import kotlinx.coroutines.delay
@@ -149,6 +148,7 @@ fun MainView(
 ) {
     val navController = rememberNavController()
     val sharedViewModel = SharedViewModel()
+    val addingPageViewModel = AddingPageViewModel()
     Scaffold(
         ) {
             NavHost(
@@ -189,6 +189,7 @@ fun MainView(
                         mainViewModel,
                         navController,
                         cameraViewModel,
+                        addingPageViewModel,
                     )
 
                 }
@@ -457,7 +458,9 @@ fun ItemUi(
                     )
                 }
                 Column(
-                    modifier = Modifier.fillMaxHeight().fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .fillMaxWidth()
                 )
                 {
                     Image(
@@ -869,25 +872,18 @@ fun addingPage(
     sharedViewModel: SharedViewModel,
     mainViewModel: MainViewModel,
     navController: NavHostController,
-    cameraViewModel: CameraViewModel
+    cameraViewModel: CameraViewModel,
+    addingPageViewModel: AddingPageViewModel
 ) {
-    var location by rememberSaveable(stateSaver = TextFieldValue.Saver) {
-        mutableStateOf(
-            TextFieldValue("")
-        )
-    }
-    var details by rememberSaveable(stateSaver = TextFieldValue.Saver) {
-        mutableStateOf(
-            TextFieldValue("")
-        )
-    }
-    var rating by rememberSaveable(stateSaver = TextFieldValue.Saver) {
-        mutableStateOf(
-            TextFieldValue("")
-        )
-    }
+
+
+
+    var viewModelLocation by addingPageViewModel.location
+    var viewModelDetails by addingPageViewModel.details
+    var viewModelRating by addingPageViewModel.rating
+    var viewModelDate by addingPageViewModel.date
+
     var imageUri = sharedViewModel.imageUri.collectAsState().value
-    var selectedDate by rememberSaveable { mutableStateOf(LocalDate.now()) }
 
     val maxLocationInputLength = 40
     val maxDetailsInputLength = 250
@@ -951,66 +947,6 @@ fun addingPage(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            TextField(
-                modifier = Modifier.padding(top = 20.dp),
-                value = location,
-                onValueChange = { newText ->
-                    if (newText.text.length <= maxLocationInputLength) location = newText
-                    else Toast.makeText(
-                        mContext,
-                        "Cannot be more than 100 Characters",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                },
-                label = {
-                    Text(text = "Location")
-                },
-            )
-            Spacer(modifier = Modifier.padding(top = 20.dp))
-            DatePickerField(
-                selectedDate = selectedDate.toString()
-            ) {
-                selectedDate = it
-            }
-            TextField(
-                modifier = Modifier.padding(top = 20.dp),
-                value = details,
-                onValueChange = { newText ->
-                    if (newText.text.length <= maxDetailsInputLength) {
-                        details = newText
-                    }
-                    else Toast.makeText(
-                        mContext,
-                        "Cannot be more than 100 Characters",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                },
-                label = {
-                    Text(text = "Details")
-                }
-            )
-            TextField(
-                modifier = Modifier.padding(top = 20.dp),
-                value = rating,
-                onValueChange = { newTextFieldValue ->
-                    val newText = newTextFieldValue.text
-
-                    if (newText.isEmpty() || newText.toIntOrNull() in 0..maxNumberInput) {
-                        rating = newTextFieldValue
-                    } else {
-                        Toast.makeText(
-                            mContext,
-                            "Please choose a number between 0 and 5",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        rating = rating.takeUnless { it.text.isEmpty() } ?: TextFieldValue("")
-                    }
-                },
-                label = {
-                    Text(text = "Rating in Number (0-5)")
-                },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-            )
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -1031,7 +967,7 @@ fun addingPage(
                         .width(230.dp)
                         .padding(top = 20.dp),
 
-                )
+                    )
                 Box(modifier = Modifier
                     .width(50.dp)
                     .padding(top = 20.dp)
@@ -1048,6 +984,74 @@ fun addingPage(
                     Icon(imageVector = Icons.Default.AddCircle, contentDescription = "Take Picture", tint = Black, modifier = Modifier.fillMaxSize())
                 }
             }
+
+            TextField(
+                modifier = Modifier.padding(top = 20.dp),
+                value = viewModelLocation,
+                onValueChange = { newText ->
+                    if (newText.length <= maxLocationInputLength) addingPageViewModel.location.value = newText
+                    else Toast.makeText(
+                        mContext,
+                        "Cannot be more than 100 Characters",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                },
+                label = {
+                    Text(text = "Location")
+                },
+            )
+            Spacer(modifier = Modifier.padding(top = 20.dp))
+            DatePickerField(
+                selectedDate = viewModelDate
+            ) {
+                addingPageViewModel.date.value = it.toString()
+            }
+            TextField(
+                modifier = Modifier.padding(top = 20.dp),
+                value = viewModelDetails,
+                onValueChange = { newText ->
+                    if (newText.length <= maxDetailsInputLength) {
+                        addingPageViewModel.details.value = newText
+                    }
+                    else Toast.makeText(
+                        mContext,
+                        "Cannot be more than 100 Characters",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                },
+                label = {
+                    Text(text = "Details")
+                }
+            )
+            TextField(
+                modifier = Modifier.padding(top = 20.dp),
+                value = viewModelRating,
+                onValueChange = { newTextFieldValue ->
+                    val newText = newTextFieldValue.trim()
+
+                    if (newText.isEmpty()) {
+                        addingPageViewModel.rating.value = newText // Update the value
+                    } else {
+                        val newValue = newText.toIntOrNull()
+                        if (newValue in 0..maxNumberInput) {
+                            addingPageViewModel.rating.value = newValue.toString()
+                        } else {
+                            Toast.makeText(
+                                mContext,
+                                "Please choose a number between 0 and 5",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            // Set the current value without changing it
+                            addingPageViewModel.rating.value = viewModelRating
+                        }
+                    }
+                },
+                label = {
+                    Text(text = "Rating in Number (0-5)")
+                },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+            )
+
 
             Spacer(modifier = Modifier.size(25.dp))
 
@@ -1069,14 +1073,15 @@ fun addingPage(
                     onClick = {
                         mainViewModel.saveButton(
                             SingleTrip(
-                                location.text,
-                                selectedDate.toString(),
-                                details.text,
-                                rating.text,
+                                viewModelLocation,
+                                viewModelDate,
+                                viewModelDetails,
+                                viewModelRating,
                                 imageUri,
                             )
                         ); navController.navigate(Screen.ShowAllTrips.route)
                         sharedViewModel.setImageUri("")
+                        addingPageViewModel.deleteAddingPageViewModelEntries()
                     },
                     modifier = Modifier
                         .padding(top = 20.dp)
@@ -1178,6 +1183,54 @@ fun editTripModal(
             backgroundColor = backgroundGreen,
             text = {
                 Column {
+                    Text(text ="Edit Trip",
+                        lineHeight = 45.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 40.sp,
+                        style = TextStyle(fontFamily = FontFamily.SansSerif),
+                        color = Color.Black,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .fillMaxWidth(),
+
+                    )
+                    Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    TextField(
+                        textStyle = TextStyle(fontFamily = FontFamily.Monospace).copy(lineBreak = LineBreak.Paragraph),
+                        value = imageUri.toString(),
+                        onValueChange = { newText ->
+                            newImageUri = newText
+                        },
+                        label = {
+                            Text(text = "Image")
+                        },
+                        readOnly = true,
+                        maxLines = 1,
+                        modifier = Modifier
+                            .width(230.dp)
+                            .padding(top = 20.dp),
+
+                        )
+                    Box(modifier = Modifier
+                        .width(50.dp)
+                        .padding(top = 20.dp)
+                        .height(55.dp)
+                        .shadow(5.dp, RoundedCornerShape(5.dp))
+                        .background(color = backgroundWhite)
+                        .clip(RoundedCornerShape(5.dp, 5.dp, 0.dp, 0.dp))
+                        .clickable {
+                            cameraViewModel.setForEditing(true)
+                            navController.navigate(Screen.CameraView.route) // For editing an existing trip
+                        },
+                        contentAlignment = Alignment.Center
+                    ){
+                        Icon(imageVector = Icons.Default.AddCircle, contentDescription = "Take Picture", tint = Black, modifier = Modifier.fillMaxSize())
+                    }
+                }
                     TextField(
                         modifier = Modifier.padding(top = 20.dp),
                         value = location,
@@ -1215,43 +1268,7 @@ fun editTripModal(
                         label = { Text(text = "Rating" ) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                     )
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        TextField(
-                            textStyle = TextStyle(fontFamily = FontFamily.Monospace).copy(lineBreak = LineBreak.Paragraph),
-                            value = imageUri.toString(),
-                            onValueChange = { newText ->
-                                newImageUri = newText
-                            },
-                            label = {
-                                Text(text = "Image")
-                            },
-                            readOnly = true,
-                            maxLines = 1,
-                            modifier = Modifier
-                                .width(230.dp)
-                                .padding(top = 20.dp),
 
-                            )
-                        Box(modifier = Modifier
-                            .width(50.dp)
-                            .padding(top = 20.dp)
-                            .height(55.dp)
-                            .shadow(5.dp, RoundedCornerShape(5.dp))
-                            .background(color = backgroundWhite)
-                            .clip(RoundedCornerShape(5.dp, 5.dp, 0.dp, 0.dp))
-                            .clickable {
-                                cameraViewModel.setForEditing(true)
-                                navController.navigate(Screen.CameraView.route) // For editing an existing trip
-                            },
-                            contentAlignment = Alignment.Center
-                        ){
-                            Icon(imageVector = Icons.Default.AddCircle, contentDescription = "Take Picture", tint = Black, modifier = Modifier.fillMaxSize())
-                        }
-                    }
                 }
             },
             confirmButton = {
