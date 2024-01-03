@@ -176,7 +176,8 @@ fun MainView(
                     showSingleTripModal(
                         mainViewModel,
                         navController,
-                        cameraViewModel
+                        cameraViewModel,
+                        sharedViewModel
                     )
 
                 }
@@ -519,7 +520,8 @@ fun SwipeBackground(
 fun showSingleTripModal(
     mainViewModel: MainViewModel,
     navController: NavHostController,
-    cameraViewModel: CameraViewModel
+    cameraViewModel: CameraViewModel,
+    sharedViewModel: SharedViewModel
 ) {
     val selectedTrip = mainViewModel.selectedTrip.collectAsState()
 
@@ -716,7 +718,8 @@ fun showSingleTripModal(
         editTripModal(
             mainViewModel,
             navController,
-            cameraViewModel
+            cameraViewModel,
+            sharedViewModel
         )
     }
 
@@ -862,7 +865,12 @@ Row(
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun addingPage(sharedViewModel: SharedViewModel,mainViewModel: MainViewModel,navController: NavHostController, cameraViewModel: CameraViewModel) {
+fun addingPage(
+    sharedViewModel: SharedViewModel,
+    mainViewModel: MainViewModel,
+    navController: NavHostController,
+    cameraViewModel: CameraViewModel
+) {
     var location by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(
             TextFieldValue("")
@@ -1135,7 +1143,8 @@ fun RatingStarsWithText(rating: String) {
 fun editTripModal(
     mainViewModel: MainViewModel,
     navController: NavHostController,
-    cameraViewModel: CameraViewModel
+    cameraViewModel: CameraViewModel,
+    sharedViewModel: SharedViewModel
 ){
     val state = mainViewModel.mainViewState.collectAsState()
 
@@ -1155,6 +1164,7 @@ fun editTripModal(
         var imageUri by rememberSaveable{
             mutableStateOf(state.value.editSingleTrip.imageUri)
         }
+        var newImageUri = sharedViewModel.imageUri.collectAsState().value
 
         val maxLocationInputLength = 50
         val maxDetailsInputLength = 250
@@ -1214,7 +1224,7 @@ fun editTripModal(
                             textStyle = TextStyle(fontFamily = FontFamily.Monospace).copy(lineBreak = LineBreak.Paragraph),
                             value = imageUri.toString(),
                             onValueChange = { newText ->
-                                imageUri = newText
+                                newImageUri = newText
                             },
                             label = {
                                 Text(text = "Image")
@@ -1253,10 +1263,11 @@ fun editTripModal(
                                 date,
                                 details,
                                 rating,
-                                imageUri,
+                                newImageUri,
                                 state.value.editSingleTrip.id
                             )
                         )
+                        sharedViewModel.setImageUri("")
                     },
                     colors = ButtonDefaults.buttonColors(orange),
                     modifier = Modifier
