@@ -40,7 +40,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
+import androidx.compose.material.Colors
 import androidx.compose.material.FloatingActionButton
+import androidx.compose.material.MaterialTheme.colors
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddCircle
@@ -59,6 +62,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SwipeToDismiss
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.rememberDismissState
 import androidx.compose.runtime.*
 import androidx.compose.runtime.Composable
@@ -77,6 +81,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Black
+import androidx.compose.ui.graphics.Color.Companion.DarkGray
 import androidx.compose.ui.graphics.Color.Companion.Gray
 import androidx.compose.ui.graphics.Color.Companion.Magenta
 import androidx.compose.ui.graphics.Color.Companion.Red
@@ -751,7 +756,7 @@ fun showSingleTripModal(
                             ) {
                                 Text(text = "Delete")
                             }
-                            // this button
+                            // this button sets the openEditDialog in the mainViewModel to true and passes the information from that trip to the mainViewModel
                             Button(onClick = { mainViewModel.editTrip(trip)},
                                 shape = RectangleShape,
                                 colors = ButtonColors(Transparent, White, Magenta, Gray),
@@ -768,6 +773,7 @@ fun showSingleTripModal(
             }
         }
 
+    // this call the editTripModal
     Column {
         editTripModal(
             mainViewModel,
@@ -777,6 +783,7 @@ fun showSingleTripModal(
         )
     }
 
+    // this is a box with a button to get back to the ShowAllTrips screen
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -827,16 +834,21 @@ fun showSingleTripModal(
         }
     }
 }
+
+// this is the composable for the SplashScreen which is the starting Destination of the app
     @Composable
     fun SplashScreen(
         navController: NavHostController
     ) {
 
+    // creating a variable to later check if the loading is finished
         val loadingFinished = remember { mutableStateOf(false) }
 
         // Introduce a 2-second delay to simulate loading
         LaunchedEffect(Unit) {
             delay(2000)  // Delay for 2 seconds
+
+            //setting the variable to true
             loadingFinished.value = true
         }
 
@@ -844,7 +856,7 @@ fun showSingleTripModal(
             modifier = Modifier
                 .fillMaxSize()
         ) {
-
+            // the splashscreen itself is just a picture which is saved in res.drawable
             Image(
                 painter = painterResource(id = R.drawable.splashscreen),
                 contentDescription = "Splashscreen",
@@ -853,23 +865,27 @@ fun showSingleTripModal(
                     .fillMaxSize()
             )
         }
+
+        // if the value of the variable is true it navigates to the ShowAllTrips
         if(loadingFinished.value) {
             navController.navigate(Screen.ShowAllTrips.route)
         }
     }
 
 
-
+// this is the composable to create a Textfield and a DatePicker with a calendar
+@OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun DatePickerField(
     selectedDate: String,
     onDateSelected: (LocalDate) -> Unit
 ) {
+    // variables to get the context and an instance of a Calendar
     val context = LocalContext.current
     val calendar = Calendar.getInstance()
 
-
+    // This is the window to show the calendar
     val datePicker = remember { // Use remember to ensure the dialog state is retained
         DatePickerDialog(
             context,
@@ -889,15 +905,25 @@ Row(
 )
 
 {
+    // in the textfield it displays the selected Date
     TextField(
         value = selectedDate,
+        colors = TextFieldDefaults.colors(
+            focusedTextColor = backgroundWhite,
+            unfocusedTextColor = backgroundWhite,
+            focusedContainerColor = Color.DarkGray,
+            unfocusedContainerColor = Color.DarkGray,
+            disabledContainerColor = Color.DarkGray,
+        ),
         onValueChange = {},
-        label = { Text(text = "Date") },
+        label = { Text(text = "Date", color = backgroundWhite) },
         readOnly = true,
         modifier = Modifier
             .width(230.dp)
     )
 
+    // Because there was an issue with clicking the Textfield itself i created this Box which is clickable and
+    // this opens up the datePicker when clicked
     Box(modifier = Modifier
         .width(50.dp)
         .height(55.dp)
@@ -906,7 +932,6 @@ Row(
         .clip(RoundedCornerShape(5.dp, 5.dp, 0.dp, 0.dp))
         .clickable {
             datePicker.show()
-            Log.d("Just the Box", "TextField Clicked")
         },
         contentAlignment = Alignment.Center
     ){
@@ -916,7 +941,8 @@ Row(
 }
 
 
-
+// this is the composable to manage tha UI and the functionality of the adding page
+@OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun addingPage(
@@ -926,20 +952,22 @@ fun addingPage(
     cameraViewModel: CameraViewModel,
     addingPageViewModel: AddingPageViewModel
 ) {
-
-
-
+    // for saving the input of the textfield even when navigating to the cameraView the input is stored as variables in the addingPageViewModel
+    // here I get the data from there and store it in variables to use them here
     var viewModelLocation by addingPageViewModel.location
     var viewModelDetails by addingPageViewModel.details
     var viewModelRating by addingPageViewModel.rating
     var viewModelDate by addingPageViewModel.date
 
+    // the imageUri doesn't have to be saved because it is the reason that i navigate to another screen
     var imageUri = sharedViewModel.imageUri.collectAsState().value
 
+    // creating variable to set a max amount of characters for textfield and to set a max number you can put in the rating
     val maxLocationInputLength = 40
     val maxDetailsInputLength = 250
-    val mContext = LocalContext.current
     val maxNumberInput= 5
+    // variables to get the context and the Focusmanager
+    val mContext = LocalContext.current
     val focusManager = LocalFocusManager.current
 
     Column(
@@ -990,6 +1018,8 @@ fun addingPage(
             modifier = Modifier
                 .fillMaxSize()
                 .pointerInput(Unit) {
+                    // if the user taps anywhere on the column (in which everything is) it clears the focus
+                    // this basically means if you are in a textfield and tap outside of it, the keyboard dissapears
                     detectTapGestures(
                         onTap = { focusManager.clearFocus() }
                     )
@@ -997,7 +1027,6 @@ fun addingPage(
             , verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -1010,14 +1039,20 @@ fun addingPage(
                         imageUri = newText
                     },
                     label = {
-                        Text(text = "Image")
+                        Text(text = "Image", color = backgroundWhite)
                     },
                     readOnly = true,
                     maxLines = 1,
+                    colors = TextFieldDefaults.colors(
+                        focusedTextColor = backgroundWhite,
+                        unfocusedTextColor = backgroundWhite,
+                        focusedContainerColor = Color.DarkGray,
+                        unfocusedContainerColor = Color.DarkGray,
+                        disabledContainerColor = Color.DarkGray,
+                    ),
                     modifier = Modifier
                         .width(230.dp)
                         .padding(top = 20.dp),
-
                     )
                 Box(modifier = Modifier
                     .width(50.dp)
@@ -1027,8 +1062,11 @@ fun addingPage(
                     .background(color = backgroundWhite)
                     .clip(RoundedCornerShape(5.dp, 5.dp, 0.dp, 0.dp))
                     .clickable {
+                        // the setForAdding is needed to tell if the navigation to the cameraView
+                        // comes from the addingPage or the EditModal
+                        // it is just a boolean which will be used to check later if it is from adding or edit
                         cameraViewModel.setForAdding(true)
-                        navController.navigate(Screen.CameraView.route) // For adding a new trip
+                        navController.navigate(Screen.CameraView.route)
                     },
                     contentAlignment = Alignment.Center
                 ){
@@ -1039,8 +1077,18 @@ fun addingPage(
             TextField(
                 modifier = Modifier.padding(top = 20.dp),
                 value = viewModelLocation,
+                colors = TextFieldDefaults.colors(
+                    focusedTextColor = backgroundWhite,
+                    unfocusedTextColor = backgroundWhite,
+                    focusedContainerColor = Color.DarkGray,
+                    unfocusedContainerColor = Color.DarkGray,
+                    disabledContainerColor = Color.DarkGray,
+                ),
                 onValueChange = { newText ->
+                    // here it checks if the input in the textfield is longer than what the maxLocationInputLength allows
+                    // if the text is longer it creates a Toast notification which tells the user how many characters are allowed
                     if (newText.length <= maxLocationInputLength) addingPageViewModel.location.value = newText
+                    // the text gets saved in the variable within the addingPageViewModel which is then retrieved by this function again
                     else Toast.makeText(
                         mContext,
                         "Cannot be more than 100 Characters",
@@ -1048,10 +1096,11 @@ fun addingPage(
                     ).show()
                 },
                 label = {
-                    Text(text = "Location")
+                    Text(text = "Location", color = backgroundWhite)
                 },
             )
             Spacer(modifier = Modifier.padding(top = 20.dp))
+            // calling the DatePickerField
             DatePickerField(
                 selectedDate = viewModelDate
             ) {
@@ -1060,7 +1109,16 @@ fun addingPage(
             TextField(
                 modifier = Modifier.padding(top = 20.dp),
                 value = viewModelDetails,
+                colors = TextFieldDefaults.colors(
+                    focusedTextColor = backgroundWhite,
+                    unfocusedTextColor = backgroundWhite,
+                    focusedContainerColor = Color.DarkGray,
+                    unfocusedContainerColor = Color.DarkGray,
+                    disabledContainerColor = Color.DarkGray,
+                ),
                 onValueChange = { newText ->
+                    // here it checks if the input in the textfield is longer than what the maxDetailsInputLength allows
+                    // if the text is longer it creates a Toast notification which tells the user how many characters are allowed
                     if (newText.length <= maxDetailsInputLength) {
                         addingPageViewModel.details.value = newText
                     }
@@ -1071,38 +1129,49 @@ fun addingPage(
                     ).show()
                 },
                 label = {
-                    Text(text = "Details")
+                    Text(text = "Details", color = backgroundWhite)
                 }
             )
             TextField(
                 modifier = Modifier.padding(top = 20.dp),
                 value = viewModelRating,
+                colors = TextFieldDefaults.colors(
+                    focusedTextColor = backgroundWhite,
+                    unfocusedTextColor = backgroundWhite,
+                    focusedContainerColor = Color.DarkGray,
+                    unfocusedContainerColor = Color.DarkGray,
+                    disabledContainerColor = Color.DarkGray,
+                ),
                 onValueChange = { newTextFieldValue ->
                     val newText = newTextFieldValue.trim()
 
+                    //for the numbers it checks if the input is empty (so if the user deletes the typed number) and sets the emtpty string as variable
                     if (newText.isEmpty()) {
                         addingPageViewModel.rating.value = newText // Update the value
                     } else {
+                        //then it transforms the string to an Int to check if it is between 0 and the maxNumberInput
                         val newValue = newText.toIntOrNull()
                         if (newValue in 0..maxNumberInput) {
+                            // if so it saves the number (converted to a string) as the value for the variable in the ViewModel
                             addingPageViewModel.rating.value = newValue.toString()
                         } else {
+                            // and if the number is higher than 5 it creates a toast notification to show the user that the number should be between 0 and maxNumberInput
                             Toast.makeText(
                                 mContext,
-                                "Please choose a number between 0 and 5",
+                                "Please choose a number between 0 and $maxNumberInput",
                                 Toast.LENGTH_SHORT
                             ).show()
-                            // Set the current value without changing it
+                            // also it sets the current value without changing it
                             addingPageViewModel.rating.value = viewModelRating
                         }
                     }
                 },
                 label = {
-                    Text(text = "Rating in Number (0-5)")
+                    Text(text = "Rating in Number (0-5)", color = backgroundWhite)
                 },
+                // the keyboardOptions make it so that you only can type in numbers
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
-
 
             Spacer(modifier = Modifier.size(25.dp))
 
@@ -1111,6 +1180,8 @@ fun addingPage(
                     .fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ){
+                // this row has a Back button which navigates back to ShowAllTrips and also a save button which also navigates there but it saves
+                // the data from the textfields into the database
                 Button(
                 onClick = {navController.navigate(Screen.ShowAllTrips.route)},
                 modifier = Modifier
@@ -1118,10 +1189,11 @@ fun addingPage(
                     .shadow(elevation = 5.dp, shape = RoundedCornerShape(20.dp)),
                 colors = ButtonDefaults.buttonColors(orange),
             ) {
-                Text(text = "Back", fontSize = 20.sp)
+                Text(text = "Back", fontSize = 20.sp, color = Black)
             }
                 Button(
                     onClick = {
+                        // when pressed it calls the saveButton function which inserts the Data from the TextFields into the database
                         mainViewModel.saveButton(
                             SingleTrip(
                                 viewModelLocation,
@@ -1130,8 +1202,12 @@ fun addingPage(
                                 viewModelRating,
                                 imageUri,
                             )
-                        ); navController.navigate(Screen.ShowAllTrips.route)
+                        );
+                        // then it navigates to the showAllTrips screen
+                        navController.navigate(Screen.ShowAllTrips.route)
+                        // sets the imageUri to an empty String (so that the field is empty when you add the next Trip)
                         sharedViewModel.setImageUri("")
+                        // and also deletes the data from the trip in the addingPageViewModel for the same reason as the imageUri
                         addingPageViewModel.deleteAddingPageViewModelEntries()
                     },
                     modifier = Modifier
@@ -1139,16 +1215,19 @@ fun addingPage(
                         .shadow(elevation = 5.dp, shape = RoundedCornerShape(20.dp)),
                     colors = ButtonDefaults.buttonColors(orange),
                     ) {
-                    Text(text = "Save", fontSize = 20.sp)
+                    Text(text = "Save", fontSize = 20.sp, color = Black)
                 }
             }
         }
     }
 }
 
+
+
 @Composable
 fun RatingStarsWithText(rating: String) {
-    val numericRating = rating.toIntOrNull() ?: 0 // Convert String to Int, default to 0 if conversion fails
+    // it saves the string with a number as an Int in a variable, default is 0 if conversion fails
+    val numericRating = rating.toIntOrNull() ?: 0
 
     Text(
         text = "Rating: ",
@@ -1159,7 +1238,7 @@ fun RatingStarsWithText(rating: String) {
         modifier = Modifier.padding(5.dp, 0.dp, 0.dp, 0.dp)
     )
     Box() {
-        // Draw five gray stars
+        // it draws five gray stars
         Row(
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically
@@ -1175,7 +1254,7 @@ fun RatingStarsWithText(rating: String) {
                 )
             }
         }
-        // Overlay yellow stars based on the rating value
+        // then it overlays yellow stars based on the rating value
         Row(
             horizontalArrangement = Arrangement.Start,
             verticalAlignment = Alignment.CenterVertically
@@ -1194,6 +1273,8 @@ fun RatingStarsWithText(rating: String) {
     }
 }
 
+
+// this is the alert Window for editing a trip
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun editTripModal(
@@ -1202,9 +1283,14 @@ fun editTripModal(
     cameraViewModel: CameraViewModel,
     sharedViewModel: SharedViewModel
 ){
+    // it collects the state if the mainViewState
     val state = mainViewModel.mainViewState.collectAsState()
 
+    // and check if the openEditDialog is true
     if(state.value.openEditDialog){
+
+        //if it is true it gets the information for each variable from the database
+
         var location by rememberSaveable {
             mutableStateOf(state.value.editSingleTrip.location)
         }
@@ -1220,18 +1306,23 @@ fun editTripModal(
         var imageUri by rememberSaveable{
             mutableStateOf(state.value.editSingleTrip.imageUri)
         }
+        // it gets the imageUri from the sharedViewModel
         var newImageUri = sharedViewModel.imageUri.collectAsState().value
-
+        // if there is no new picture which gets saved in the sharedViewModel it sets the imageUri from the database as the newImageUri
         if(newImageUri =="") {
             newImageUri = imageUri
         }
 
+        // here again are the variables to check if the TextField input is longer than the variables
         val maxLocationInputLength = 50
         val maxDetailsInputLength = 250
-        val mContext = LocalContext.current
         val maxNumberInput= 5
+        val mContext = LocalContext.current
+
+        // In an AlertDialog it displays multiple TextFields with the information from the database
         AlertDialog(
             onDismissRequest = {
+                // when tapped outside of the alertDialog it closes it
                 mainViewModel.dismissEditDialog()
             },
             backgroundColor = backgroundGreen,
@@ -1256,9 +1347,16 @@ fun editTripModal(
                     TextField(
                         textStyle = TextStyle(fontFamily = FontFamily.Monospace).copy(lineBreak = LineBreak.Paragraph),
                         value = newImageUri.toString(),
+                        colors = TextFieldDefaults.colors(
+                            focusedTextColor = backgroundWhite,
+                            unfocusedTextColor = backgroundWhite,
+                            focusedContainerColor = Color.DarkGray,
+                            unfocusedContainerColor = Color.DarkGray,
+                            disabledContainerColor = Color.DarkGray,
+                        ),
                         onValueChange = {},
                         label = {
-                            Text(text = "Image")
+                            Text(text = "Image", color = backgroundWhite)
                         },
                         readOnly = true,
                         maxLines = 1,
@@ -1275,8 +1373,9 @@ fun editTripModal(
                         .background(color = backgroundWhite)
                         .clip(RoundedCornerShape(5.dp, 5.dp, 0.dp, 0.dp))
                         .clickable {
+                            // as in the addingPage this is needed to differentiate if the navigation comes from the editing or the adding page
                             cameraViewModel.setForEditing(true)
-                            navController.navigate(Screen.CameraView.route) // For editing an existing trip
+                            navController.navigate(Screen.CameraView.route)
                         },
                         contentAlignment = Alignment.Center
                     ){
@@ -1286,13 +1385,23 @@ fun editTripModal(
                     TextField(
                         modifier = Modifier.padding(top = 20.dp),
                         value = location,
+                        colors = TextFieldDefaults.colors(
+                            focusedTextColor = backgroundWhite,
+                            unfocusedTextColor = backgroundWhite,
+                            focusedContainerColor = Color.DarkGray,
+                            unfocusedContainerColor = Color.DarkGray,
+                            disabledContainerColor = Color.DarkGray,
+                        ),
                         onValueChange = { newText ->
+                            // it checks if the new input is longer then the maxLocationInputLength
                             if(newText.length <= maxLocationInputLength) location = newText
+                            // if it is longer it creates a toast notification
                             else Toast.makeText(mContext, "Cannot be more than 50 Characters", Toast.LENGTH_SHORT).show()},
-                        label = { Text(text = "Location") },
+                        label = { Text(text = "Location", color = backgroundWhite) },
                         textStyle = TextStyle(background = Transparent)
                     )
                     Spacer(modifier = Modifier.padding(top = 20.dp))
+                    // this calls the datePicker
                     DatePickerField(
                         selectedDate = date
                     ) {
@@ -1301,23 +1410,39 @@ fun editTripModal(
                     TextField(
                         modifier = Modifier.padding(top = 20.dp),
                         value = details,
+                        colors = TextFieldDefaults.colors(
+                            focusedTextColor = backgroundWhite,
+                            unfocusedTextColor = backgroundWhite,
+                            focusedContainerColor = Color.DarkGray,
+                            unfocusedContainerColor = Color.DarkGray,
+                            disabledContainerColor = Color.DarkGray,
+                        ),
                         onValueChange = { newText ->
+                            // it checks if the new input is longer then the maxDetailsInputLength
                             if(newText.length <= maxDetailsInputLength) details = newText
                             else Toast.makeText(mContext, "Cannot be more than 250 Characters", Toast.LENGTH_SHORT).show()
                                         },
-                        label = { Text(text = "Details" ) }
+                        label = { Text(text = "Details" , color = backgroundWhite) }
                     )
                     TextField(
                         modifier = Modifier.padding(top = 20.dp),
                         value = rating,
+                        colors = TextFieldDefaults.colors(
+                            focusedTextColor = backgroundWhite,
+                            unfocusedTextColor = backgroundWhite,
+                            focusedContainerColor = Color.DarkGray,
+                            unfocusedContainerColor = Color.DarkGray,
+                            disabledContainerColor = Color.DarkGray,
+                        ),
                         onValueChange = { newText ->
+                            // it checks if the number is between 0 and the maxNumberInput
                             if(newText.isEmpty() || newText.toIntOrNull() in 0..maxNumberInput){
                                 rating = newText
                             } else {
                                 Toast.makeText(mContext, "Please choose a number between 0 and 5", Toast.LENGTH_SHORT).show()
                             }
                         },
-                        label = { Text(text = "Rating" ) },
+                        label = { Text(text = "Rating", color = backgroundWhite) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                     )
 
@@ -1326,7 +1451,7 @@ fun editTripModal(
             confirmButton = {
                 Button(
                     onClick = {
-                        Log.d("Image_Debug", "save $newImageUri")
+                        // this sends the new information (even when nothing is changed) to the saveEditedTrip function which saves it in the database
                         mainViewModel.saveEditedTrip(
                             SingleTrip(
                                 location,
@@ -1334,9 +1459,11 @@ fun editTripModal(
                                 details,
                                 rating,
                                 newImageUri,
+                                //here it also needs the id to know which trip is edited
                                 state.value.editSingleTrip.id
                             )
                         )
+                        // it then sets the imageUri to an empty string in the sharedViewModel so that it is empty when adding a new trip (because they share that viewModel)
                         sharedViewModel.setImageUri("")
                     },
                     colors = ButtonDefaults.buttonColors(orange),
@@ -1353,6 +1480,7 @@ fun editTripModal(
 }
 
 
+// this is the composable to define the UI of the CameraView
 @Composable
 fun CameraView(
     sharedViewModel: SharedViewModel,
@@ -1363,15 +1491,19 @@ fun CameraView(
     cameraExecutor: ExecutorService,
     directory: File,
 ){
+    // here it gets if the navigation comes from the adding page or the editing page
     val forAdding = cameraViewModel.forAdding.value
     val forEditing = cameraViewModel.forEditing.value
 
+    // this is later needed for navigating back to a different screen
     val coroutineScope = rememberCoroutineScope()
+
 
     Box(
         contentAlignment = Alignment.BottomCenter,
         modifier = Modifier.fillMaxSize()
         ){
+        // here it creates the Preview so that you see what the camera sees
         AndroidView({previewView}, modifier = Modifier.fillMaxSize())
         Row(
             modifier = Modifier
@@ -1382,13 +1514,18 @@ fun CameraView(
 
         ){
             Button(
+                // because of my camera error the user has to go back one time and then go to the camera again
+                // i wanted that it navigates to the right screen
+                // therefore it check if the navigation to the camera came from adding or editing and then navigates back to where it came from
                 onClick = {if (forAdding) {
-                    // Navigate back to addingPage with the captured image URI
+                    // Navigate back to addingPage
                     navController.navigate(Screen.AddingPage.route)
+                    // setting the variable to false again
                     cameraViewModel.setForAdding(false)
                 } else if (forEditing) {
-                    // Navigate back to editing with the captured image URI
+                    // Navigate back to editing
                     navController.navigate(Screen.ShowSingleTrip.route)
+                    // setting the variable to false again
                     cameraViewModel.setForEditing(false)
                 }},
                 colors = ButtonDefaults.buttonColors(orange),
@@ -1399,12 +1536,14 @@ fun CameraView(
             Button(
                 modifier = Modifier,
                 onClick = {
+                    // here it creates the directory and name for the image
                     val photoFile = File(
                         directory,
                         SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.GERMANY).format(System.currentTimeMillis()) + ".jpg"
                     )
 
                     imageCapture.takePicture(
+                        // it builds the image based on the photoFile from above
                         ImageCapture.OutputFileOptions.Builder(photoFile).build(),
                         cameraExecutor,
                         object : ImageCapture.OnImageSavedCallback{
@@ -1412,8 +1551,11 @@ fun CameraView(
                             }
 
                             override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                                // when the image is saved it creates a variable which is the filePath
                                 val imageUri = "file://${photoFile.absolutePath}"
+                                // it saves that Uri in the sharedViewModel
                                 sharedViewModel.setImageUri(imageUri)
+                                // and then navigates back to the page it came from
                                 coroutineScope.launch{
                                     if (forAdding) {
                                         // Navigate back to addingPage with the captured image URI
@@ -1434,9 +1576,7 @@ fun CameraView(
             ) {
                 Icon(Icons.Default.AddCircle, "Take Photo", tint = backgroundWhite)
             }
-
         }
-
     }
 }
 
