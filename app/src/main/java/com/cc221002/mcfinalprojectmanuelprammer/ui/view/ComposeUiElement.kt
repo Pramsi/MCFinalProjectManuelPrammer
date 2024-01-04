@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
-
 package com.cc221002.mcfinalprojectmanuelprammer.ui.view
 
 import android.annotation.SuppressLint
@@ -96,7 +94,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.LineBreak
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -128,6 +125,8 @@ import java.util.Calendar
 import java.util.Locale
 import java.util.concurrent.ExecutorService
 
+
+// creating a sealed class for the Screens to navigate between
 sealed class Screen(val route: String) {
     object SplashScreen: Screen("splashScreen")
     object ShowAllTrips: Screen("showTrips")
@@ -136,6 +135,9 @@ sealed class Screen(val route: String) {
     object CameraView: Screen("cameraView")
 }
 
+
+// this is the MainView Composable which is the first thing i navigate from the MainActivity
+// here the routes of the screens are defined
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun MainView(
@@ -146,14 +148,18 @@ fun MainView(
     cameraExecutor: ExecutorService,
     directory: File
 ) {
+    // creating instances of the ViewModels and the NavController
     val navController = rememberNavController()
     val sharedViewModel = SharedViewModel()
     val addingPageViewModel = AddingPageViewModel()
+
+    // defining the routes to each Screen and what happens when that route is used
     Scaffold(
         ) {
             NavHost(
                 navController = navController,
                 modifier = Modifier.padding(it),
+                // the starting screen is the SplashScreen
                 startDestination = Screen.SplashScreen.route
             ) {
                 composable(Screen.SplashScreen.route) {
@@ -170,7 +176,6 @@ fun MainView(
                         navController,
                     )
                 }
-
                 composable(Screen.ShowSingleTrip.route) {
                     mainViewModel.selectScreen(Screen.ShowSingleTrip)
                     showSingleTripModal(
@@ -179,9 +184,7 @@ fun MainView(
                         cameraViewModel,
                         sharedViewModel
                     )
-
                 }
-
                 composable(Screen.AddingPage.route) {
                     mainViewModel.selectScreen(Screen.AddingPage)
                     addingPage(
@@ -191,9 +194,7 @@ fun MainView(
                         cameraViewModel,
                         addingPageViewModel,
                     )
-
                 }
-
                 composable(Screen.CameraView.route) {
                     mainViewModel.selectScreen(Screen.CameraView)
                     CameraView(
@@ -205,13 +206,13 @@ fun MainView(
                         cameraExecutor,
                         directory,
                     )
-
                 }
             }
         }
     }
 
 
+// This is the real Main Screen actually. It is the ShowTrips Composable and displays all the trips in the database
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
@@ -220,12 +221,16 @@ fun showTrips(
     mainViewModel: MainViewModel,
     navController: NavHostController
 ) {
+
+    // collecting the information for all the trips and creating a mutable List with that
     val tripsState by mainViewModel.trips.collectAsState()
     val trips = tripsState.toMutableList()
+
+    // counting the number of trips to display on the screen
     val tripsCounter = trips.count()
-    val state = mainViewModel.mainViewState.collectAsState()
 
     Scaffold(
+        // a floating button on the bottom right to navigate to the Adding Page
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { navController.navigate(Screen.AddingPage.route) },
@@ -240,6 +245,8 @@ fun showTrips(
             }
         }
     ) {
+
+        // Defining the Layout of the Screen
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -254,6 +261,7 @@ fun showTrips(
                 , contentAlignment = Alignment.CenterStart
             )
             {
+                // drawing a white circle with Canvas because I could not do it differently
                 Canvas(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -266,6 +274,7 @@ fun showTrips(
                             style = Stroke(10f),
                             alpha = 0.1f,
                         )
+                        // imitating shadow with multiple circles with different size and stroke thickness
                         drawCircle(Black, radius = 299.dp.toPx(), style = Stroke(8f), alpha = 0.1f,)
                         drawCircle(Black, radius = 299.dp.toPx(), style = Stroke(3f), alpha = 0.1f,)
                         drawCircle(Black, radius = 300.dp.toPx(), style = Stroke(2f), alpha = 0.1f,)
@@ -273,6 +282,7 @@ fun showTrips(
                     }
                 }
                 Column {
+                    // Text inside of the white Circle
                     Text(
                         text = "Your Adventures!",
                         fontWeight = FontWeight.Bold,
@@ -285,6 +295,7 @@ fun showTrips(
                             .padding(0.dp, 20.dp, 0.dp, 0.dp)
 
                     )
+                    // The amount of Trips that are stored in the database
                     Text(
                         text = "Trips: $tripsCounter",
                         fontWeight = FontWeight.Bold,
@@ -300,6 +311,8 @@ fun showTrips(
             }
             Spacer(modifier = Modifier.height(5.dp))
 
+
+            // with the LazyColumn
             LazyColumn(
                 state = rememberLazyListState(),
                 verticalArrangement = Arrangement.Top,
