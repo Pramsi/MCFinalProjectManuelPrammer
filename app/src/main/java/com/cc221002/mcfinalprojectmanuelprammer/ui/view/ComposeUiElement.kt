@@ -79,6 +79,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Black
 import androidx.compose.ui.graphics.Color.Companion.Gray
 import androidx.compose.ui.graphics.Color.Companion.Magenta
+import androidx.compose.ui.graphics.Color.Companion.Red
 import androidx.compose.ui.graphics.Color.Companion.Transparent
 import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.graphics.Path
@@ -312,7 +313,7 @@ fun showTrips(
             Spacer(modifier = Modifier.height(5.dp))
 
 
-            // with the LazyColumn
+            // with the LazyColumn each trip is dynamically displayed
             LazyColumn(
                 state = rememberLazyListState(),
                 verticalArrangement = Arrangement.Top,
@@ -321,41 +322,55 @@ fun showTrips(
                     .weight(1f)
                     .fillMaxWidth()
             ) {
+                // each item gets the trips list and then each single trip is used to render one Panel do display its data
                 items(items = trips, key = { trip -> trip.id }) { trip ->
 
+                    // Each panel for a trip is swipe-able to delete it
+                    // therefore I use the following
+                    // here I get the state of the Dismiss (if it is swiped right or left)
                     val dismissState = rememberDismissState(
                         confirmValueChange = {
+                            // if the user swipes from right to left it opens the AlertDialog for the trip that is swiped and passes the id
                             if (it == DismissValue.DismissedToStart) {
                                 mainViewModel.openAlertDialog(trip.id.toString())
                             }
                             false
                         }
                     )
+
+                    // this is the function to make the panel swipe-able
                     SwipeToDismiss(
+                        // here I set the state of the function
                         state = dismissState,
                         modifier = Modifier
                             .padding(vertical = 1.dp)
                             .animateItemPlacement(),
+                        // for the background I have a function to handle the colors of the background during the swiping
                         background = {
                             SwipeBackground(dismissState = dismissState)
                         },
+                        // here I set the content which will be dismissed
                         dismissContent = {
+                            // The ItemUi is the general layout for each trip
                             ItemUi(
                                 mainViewModel = mainViewModel,
                                 navController = navController,
                                 trip = trip,
                             )
-                        },
-
+                        }
                     )
 
+                    // initialising the variable to check for which Trip the AlertDialog is open
                     val openAlertDialogForTrip = mainViewModel.openAlertDialogForTrip.value
 
                     if (openAlertDialogForTrip == trip.id.toString()) {
+                        // if the trip id from the mainViewModel (that was set in the dismissState) is the same as the one from the trip it show the
+                        // confirmation alert to ask if the user is sure to delete the trip
                         showDeleteConfirmationDialog(
                             mainViewModel = mainViewModel,
                             trip = trip,
                             onDeleteConfirmed = {
+                                // if the user confirms, it closes the dialog and deletes the trip which was swiped
                                 mainViewModel.dismissAlertDialog()
                                 mainViewModel.deleteTrip(it,navController)
                             })
@@ -366,13 +381,15 @@ fun showTrips(
     }
 }
 
-
+// the Composable to define the Alert to ask for confirmation of deleting a trip
 @Composable
 fun showDeleteConfirmationDialog(
     mainViewModel: MainViewModel,
     trip: SingleTrip,
     onDeleteConfirmed: (SingleTrip) -> Unit
 ) {
+    // It generally is just an AlertDialog which is dismissed when you tap beside the alert, when you press "Cancel" and when you press "Confirm"
+    // but on Confirm the function sends back that it was confirmed to delete that trip
     AlertDialog(
         onDismissRequest = { mainViewModel.dismissAlertDialog() },
         title = { Text("Delete Trip?", color = Black, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth()) },
@@ -399,12 +416,15 @@ fun showDeleteConfirmationDialog(
         }
     )
 }
+
+// this is the general UI of each Item
 @Composable
 fun ItemUi(
     mainViewModel: MainViewModel,
     navController: NavHostController,
     trip:SingleTrip
 ){
+    // it gets a SingleTrip passed and then it uses the dynamic information to render a Panel to display the data and the Picture
     Box(modifier = Modifier.fillMaxSize()) {
         Row(
             modifier = Modifier
@@ -415,6 +435,8 @@ fun ItemUi(
                 .border(1.dp, Color.Black, shape = RoundedCornerShape(20.dp))
                 .background(backgroundWhite)
                 .clickable {
+                    // each Panel is clickable to redirect to the view to get more information for the pressed trip
+                    // it passes the id of the pressed it to the mainViewModel to collect the data to the trip with that id and then navigates to the other screen where that is displayed
                     mainViewModel.showTripWithID(trip.id)
                     navController.navigate(Screen.ShowSingleTrip.route)
                 },
@@ -489,17 +511,21 @@ fun ItemUi(
 }
 
 
-
+// this is the function to handle what happens in the UI if a trip is swiped in the ShowAllTrips screen
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SwipeBackground(
     dismissState: DismissState
 ) {
+    // first it gets the direction of the swipe
     val direction = dismissState.dismissDirection ?: return
 
+    // it only allows swiping from End to Start
     if (direction != DismissDirection.EndToStart) {
-        return // Only allow swipe from Start to End
+        return
     }
+
+    // changing the color when swiped to the Start
     val color by animateColorAsState(
         when (dismissState.targetValue) {
             DismissValue.Default -> Color.Transparent
@@ -507,14 +533,13 @@ fun SwipeBackground(
             DismissValue.DismissedToStart -> Color.Red
         }, label = "swipeanimate"
     )
-    val alignment = when (direction) {
-        DismissDirection.StartToEnd -> Alignment.CenterStart
-        DismissDirection.EndToStart -> Alignment.CenterEnd
-    }
+
+    // setting the icon as a variable
     val icon = Icons.Default.Delete
 
+    // changing the scale of the icon based on the amount the panel is dragged
     val scale by animateFloatAsState(
-        if (dismissState.targetValue == DismissValue.Default) 0.75f else 1f, label = "floatanimate"
+        if (dismissState.targetValue == DismissValue.Default) 0.75f else 1.5f, label = "floatanimate"
     )
 
     Box(
@@ -522,15 +547,18 @@ fun SwipeBackground(
             .fillMaxSize()
             .background(color)
             .padding(horizontal = 20.dp),
-        contentAlignment = alignment
+        contentAlignment = Alignment.CenterEnd
     ) {
         Icon(
             icon,
             contentDescription = "Localized description",
-            modifier = Modifier.scale(scale)
+            modifier = Modifier.scale(scale),
+            tint = backgroundWhite
         )
     }
 }
+
+// this is the composable to define how the view, to see the information of a single trip, looks like
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun showSingleTripModal(
@@ -539,8 +567,11 @@ fun showSingleTripModal(
     cameraViewModel: CameraViewModel,
     sharedViewModel: SharedViewModel
 ) {
+    // collecting the selected trip as State (that was set when tapping on a trip panel in ShowAllTrips)
     val selectedTrip = mainViewModel.selectedTrip.collectAsState()
 
+    // Again a LazyColum to render it dynamically
+    // it is nearly the same, but there is another field under the panel with the Trip to: to show more information
     LazyColumn(
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -548,11 +579,13 @@ fun showSingleTripModal(
             .fillMaxSize()
             .background(backgroundGreen)
     ) {
+        // it is done with items but i had to tell it that it should only display one
             items(1) {    selectedTrip.value?.let { trip ->
                 Canvas(
                     modifier = Modifier
                         .fillMaxSize()
                 ) {
+                    // drawing a circle with imitated shadow
                     translate(left = 0f, top = -550f) {
                         drawCircle(backgroundWhite, radius = 300.dp.toPx())
                         drawCircle(Black, radius = 298.dp.toPx(), style = Stroke(10f), alpha = 0.1f,)
@@ -670,6 +703,7 @@ fun showSingleTripModal(
                             )
 
                             Text(
+                                // when the details are too long to display it, it gets scrollable
                                 text = trip.details,
                                 textAlign = TextAlign.Start,
                                 fontSize = 20.sp,
@@ -690,6 +724,7 @@ fun showSingleTripModal(
                                 modifier=Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.Center
                             ) {
+                                // this function is responsible for drawing the stars for the rating
                                 RatingStarsWithText(trip.rating)
                             }
 
@@ -702,7 +737,10 @@ fun showSingleTripModal(
                             horizontalArrangement = Arrangement.Center
 
                         ){
+                            // This row has the two buttons in it to either delete the trip you are currently looking at
+                            // or to edit it
                             Button(onClick = {
+                                // when you press it you delete the trip and get redirected to the ShowAllTrips
                                 mainViewModel.deleteTrip(trip,navController)
                             },
                                 shape = RectangleShape,
@@ -713,7 +751,7 @@ fun showSingleTripModal(
                             ) {
                                 Text(text = "Delete")
                             }
-
+                            // this button
                             Button(onClick = { mainViewModel.editTrip(trip)},
                                 shape = RectangleShape,
                                 colors = ButtonColors(Transparent, White, Magenta, Gray),
