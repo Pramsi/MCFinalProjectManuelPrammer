@@ -35,10 +35,15 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 class MainActivity : ComponentActivity() {
+    //------------------
+    // DATABASE
+    //------------------
+
+    // Creating a lazy Room Database
     private val db by lazy {
         Room.databaseBuilder(this, TripsDatabase::class.java, "TripsDatabase.db") .addMigrations(TripsDatabase.MIGRATION_1_2).build()
     }
-
+    // Creating the mainViewModel
     private val mainViewModel by viewModels<MainViewModel>(
         factoryProducer = {
             object : ViewModelProvider.Factory{
@@ -48,23 +53,33 @@ class MainActivity : ComponentActivity() {
             }
         }
     )
+    //------------------
+    // CAMERA
+    //------------------
 
-    private val cameraViewModel = CameraViewModel()
-    private val requestPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ){
-        cameraViewModel.setCameraPermission(it)
-    }
-
+    // initializing the variables
     private lateinit var cameraProviderFuture: ListenableFuture<ProcessCameraProvider>
     private lateinit var cameraExecutor: ExecutorService
     private lateinit var previewView: PreviewView
     private val imageCapture: ImageCapture = ImageCapture.Builder().build()
     private val preview: Preview = Preview.Builder().build()
 
+    private val cameraViewModel = CameraViewModel()
+    private val requestPermissionLauncher = registerForActivityResult(
+        // requesting the Permission to use the camera
+        ActivityResultContracts.RequestPermission()
+    ){
+        // setting if the Permission is granted or not
+        cameraViewModel.setCameraPermission(it)
+    }
+
+    // Function to set up the Camera
     private fun setupCamera(){
+        //getting the context for the CameraPreview and the cameraProvider
         previewView = PreviewView(this)
         cameraProviderFuture = ProcessCameraProvider.getInstance(this)
+
+        //binding the CameraProvider to the lifecycle
         cameraProviderFuture.addListener(
             {
                 val cameraProvider = cameraProviderFuture.get()
@@ -75,9 +90,10 @@ class MainActivity : ComponentActivity() {
         cameraExecutor = Executors.newSingleThreadExecutor()
     }
 
-
+    // the function to bind the CameraProvider to the Lifecycle
     private fun bindPreview(cameraProvider: ProcessCameraProvider) {
         cameraProvider.unbindAll()
+        // binding the preview to the lifecycle
         cameraProvider.bindToLifecycle(
             this as LifecycleOwner,
             CameraSelector.Builder()
@@ -85,41 +101,18 @@ class MainActivity : ComponentActivity() {
                 .build(),
             preview, imageCapture
         )
+        // setting the surfaceProvider for the preview
         preview.setSurfaceProvider(previewView.surfaceProvider)
     }
 
-// maybe the MainView is too fast, because i send everything there right at the beginning
-    //handle that i have the result of the Future ->cameraProviderFuture.addListener(
-// fast workaround --> put it on a separate view and not nested into Adding page
-
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        requestPermission()
-
-//        mainViewModel.wipeDatabase()
-//        mainViewModel.insertPreTrips()
-        setContent {
-            MCFinalProjectManuelPrammerTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    setupCamera()
-                    MainView(mainViewModel, cameraViewModel, previewView, imageCapture, cameraExecutor, getOutputDirectory())
-                }
-            }
-        }
-    }
-
+    // overwritten function to define what happens when the activity is destroyed
     override fun onDestroy() {
         super.onDestroy()
+        // it still deletes every remaining thing before destroying the activity but it also shuts down the cameraExecutor
         cameraExecutor.shutdown()
     }
 
+    // the function to create the directory for the Images that are taken in the app
     private fun getOutputDirectory(): File{
         val mediaDir = externalMediaDirs.firstOrNull()?.let {
             File(it,"TripDiary").apply { mkdirs() }
@@ -127,16 +120,50 @@ class MainActivity : ComponentActivity() {
         return if(mediaDir != null && mediaDir.exists()) mediaDir else filesDir
     }
 
+    // the function that asks for permission to use the camera
     private fun requestPermission(){
+        // it check if the Permission is already granted. If not it launches the function to ask for it
         ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA).let{ result ->
             if(result != PackageManager.PERMISSION_GRANTED){
                 requestPermissionLauncher.launch(Manifest.permission.CAMERA)
             } else {
+                //if it is already granted it sets the cameraPermission to true
                 cameraViewModel.setCameraPermission(true)
             }
         }
     }
 
+    //------------------
+    // CREATING THE APP
+    //------------------
+    @RequiresApi(Build.VERSION_CODES.O)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        // creating an instance
+        super.onCreate(savedInstanceState)
 
+        // ask for Permission to use the Camera
+        requestPermission()
+
+
+        // those are functions to delete everything in the database and to create predefined db entries
+        //mainViewModel.wipeDatabase()
+        //mainViewModel.insertPreTrips()
+
+
+        setContent {
+            MCFinalProjectManuelPrammerTheme {
+                // A surface container using the 'background' color from the theme
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    // setting up the camera
+                    setupCamera()
+                    // directing to my MainView in the ComposableUiElement.kt file and passing everything that is needed
+                    MainView(mainViewModel, cameraViewModel, previewView, imageCapture, cameraExecutor, getOutputDirectory())
+                }
+            }
+        }
+    }
 }
 
