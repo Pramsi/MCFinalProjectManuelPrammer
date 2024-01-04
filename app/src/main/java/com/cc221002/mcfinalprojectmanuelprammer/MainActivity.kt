@@ -41,7 +41,8 @@ class MainActivity : ComponentActivity() {
 
     // Creating a lazy Room Database
     private val db by lazy {
-        Room.databaseBuilder(this, TripsDatabase::class.java, "TripsDatabase.db") .addMigrations(TripsDatabase.MIGRATION_1_2).build()
+        Room.databaseBuilder(this, TripsDatabase::class.java, "TripsDatabase.db").build()
+    /*.addMigrations(TripsDatabase.MIGRATION_1_2)     Only needed for migration of the database*/
     }
     // Creating the mainViewModel
     private val mainViewModel by viewModels<MainViewModel>(
