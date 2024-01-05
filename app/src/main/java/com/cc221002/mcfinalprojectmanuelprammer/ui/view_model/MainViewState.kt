@@ -10,7 +10,7 @@ data class MainViewState(
     val trips: List<SingleTrip> = emptyList(),
     // when editing a trip the information from the database gets saved here and is then used for displaying it
     val editSingleTrip: SingleTrip = SingleTrip("","","","",""),
-    // this one saves on shich screen the user is
+    // this one saves on which screen the user is
     val selectedScreen: Screen = Screen.SplashScreen,
 
     // those variables are used to manage if Dialogs are open or closed
