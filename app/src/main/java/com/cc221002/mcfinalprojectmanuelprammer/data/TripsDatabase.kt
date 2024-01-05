@@ -8,7 +8,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import com.cc221002.mcfinalprojectmanuelprammer.data.model.SingleTrip
 
 // this creates a room database and defines that the entities of the database is a class called SingleTrip
-@Database(entities = [SingleTrip::class], version = 2)
+@Database(entities = [SingleTrip::class], version = 1)
 abstract class TripsDatabase : RoomDatabase() {
     // here you define that the dao is the TripsDao.kt
     abstract val dao: TripsDao
